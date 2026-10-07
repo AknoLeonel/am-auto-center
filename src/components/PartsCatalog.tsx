@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { parts, vehicles, vehicleLabel, type VehicleId } from "@/lib/parts";
 import { wa } from "@/lib/site";
+import { registrarPedido } from "@/lib/pedidos";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 type Line = { key: string; name: string; vehicle: VehicleId; qty: number };
@@ -201,7 +202,7 @@ export function PartsCatalog() {
             </div>
 
             <div className="border-t border-line px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
-              <a href={wa(orderMsg)} target="_blank" rel="noopener"
+              <a href={wa(orderMsg)} target="_blank" rel="noopener" onClick={() => registrarPedido({ tipo: "pecas", nome: form.nome, veiculo: form.modelo, mensagem: orderMsg })}
                 className="flex min-h-13 w-full items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 text-lg font-bold text-white hover:brightness-110">
                 <WhatsAppIcon /> Enviar pedido no WhatsApp
               </a>

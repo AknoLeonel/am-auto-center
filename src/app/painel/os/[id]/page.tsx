@@ -138,6 +138,7 @@ export default function DetalheOS() {
       <section className="grid gap-2 sm:grid-cols-2">
         <a href={waTo(os.clientes.telefone, msgOrcamento)} target="_blank" rel="noopener" className={btnWa}>Enviar orçamento no WhatsApp</a>
         <a href={waTo(os.clientes.telefone, msgPronto)} target="_blank" rel="noopener" className={btnWa}>Avisar: carro pronto</a>
+<Link href={`/painel/os/${id}/imprimir`} className="inline-flex min-h-12 items-center justify-center rounded-lg border-2 border-line bg-white px-5 font-bold hover:border-ink sm:col-span-2">Imprimir ou salvar PDF</Link>
         {!os.clientes.telefone && <p className="text-sm text-mute sm:col-span-2">Sem telefone cadastrado: o WhatsApp abrirá sem destinatário.</p>}
       </section>
 

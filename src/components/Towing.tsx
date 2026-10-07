@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { vehicles, vehicleLabel, type VehicleId } from "@/lib/parts";
 import { wa } from "@/lib/site";
+import { registrarPedido } from "@/lib/pedidos";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 export function Towing() {
@@ -73,7 +74,7 @@ export function Towing() {
             <p className="mt-2 text-sm text-red-700">Não foi possível obter a localização. Você pode informá-la na conversa do WhatsApp.</p>
           )}
 
-          <a href={wa(msg)} target="_blank" rel="noopener"
+          <a href={wa(msg)} target="_blank" rel="noopener" onClick={() => registrarPedido({ tipo: "guincho", veiculo: `${vehicleLabel(v)}${model ? " " + model : ""}`, mensagem: msg })}
             className="mt-3 flex min-h-13 w-full items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 text-lg font-bold text-white hover:brightness-110">
             <WhatsAppIcon /> Pedir guincho no WhatsApp
           </a>

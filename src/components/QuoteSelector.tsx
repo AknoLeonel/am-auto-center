@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { services, wa, defaultMsg } from "@/lib/site";
+import { registrarPedido } from "@/lib/pedidos";
 import { WhatsAppIcon } from "./WhatsAppIcon";
  
 export function QuoteSelector() {
@@ -32,7 +33,7 @@ export function QuoteSelector() {
         })}
       </div>
       <a
-        href={wa(text)} target="_blank" rel="noopener"
+        href={wa(text)} target="_blank" rel="noopener" onClick={() => picked.length > 0 && registrarPedido({ tipo: "orcamento", mensagem: text })}
         className="mt-5 flex min-h-13 w-full items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 text-lg font-bold text-white hover:brightness-110"
       >
         <WhatsAppIcon /> Receber orçamento no WhatsApp
