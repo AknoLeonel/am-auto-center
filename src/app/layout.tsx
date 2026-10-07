@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: { title, description, type: "website", locale: "pt_BR", siteName: site.name, url: site.url },
   robots: { index: true, follow: true },
-  appleWebApp: { capable: true, title: "AM Painel", statusBarStyle: "black-translucent" },
   icons: { apple: "/pwa-icon/180" },
 };
  

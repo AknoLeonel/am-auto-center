@@ -2,12 +2,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { normPlaca } from "@/lib/painel";
+import { normPlaca, inteiro } from "@/lib/painel";
 import { input, btnPrimary, btnGhost, card } from "@/components/ui";
 
 type Found = {
   id: string; placa: string; modelo: string | null; ano: number | null; km: number | null; cliente_id: string;
   clientes: { nome: string; telefone: string | null };
+};
+
+const anoValido = (s: string) => {
+  const a = inteiro(s);
+  return a && a >= 1950 && a <= 2100 ? a : null;
 };
 
 export default function NovaOS() {
@@ -36,32 +41,40 @@ export default function NovaOS() {
 
   async function criar(e: React.FormEvent) {
     e.preventDefault(); setErr("");
+    const tel = f.telefone.replace(/\D/g, "");
     if (!found && !f.nome.trim()) { setErr("Informe o nome do cliente."); return; }
+    if (!found && tel && (tel.length < 10 || tel.length > 13)) { setErr("Telefone incompleto. Use DDD + número, ex.: 77 99999-9999."); return; }
+
     setBusy(true);
+    let novoClienteId: string | null = null;
     try {
       let clienteId = found?.cliente_id;
       let veiculoId = found?.id;
+      const km = inteiro(f.km);
+
       if (!found) {
-        const c = await supabase.from("clientes")
-          .insert({ nome: f.nome.trim(), telefone: f.telefone.replace(/\D/g, "") || null }).select("id").single();
+        const c = await supabase.from("clientes").insert({ nome: f.nome.trim(), telefone: tel || null }).select("id").single();
         if (c.error) throw c.error;
-        clienteId = c.data.id;
+        clienteId = novoClienteId = c.data.id;
         const v = await supabase.from("veiculos").insert({
-          cliente_id: clienteId, placa: normPlaca(placa), tipo: f.tipo, modelo: f.modelo || null,
-          ano: f.ano ? Number(f.ano) : null, km: f.km ? Number(f.km) : null,
+          cliente_id: clienteId, placa: normPlaca(placa), tipo: f.tipo, modelo: f.modelo.trim() || null, ano: anoValido(f.ano), km,
         }).select("id").single();
         if (v.error) throw v.error;
         veiculoId = v.data.id;
-      } else if (f.km) {
-        await supabase.from("veiculos").update({ km: Number(f.km) }).eq("id", found.id);
+      } else if (km) {
+        await supabase.from("veiculos").update({ km }).eq("id", found.id);
       }
+
       const o = await supabase.from("ordens_servico").insert({
-        cliente_id: clienteId, veiculo_id: veiculoId, defeito: f.defeito || null, km: f.km ? Number(f.km) : null,
+        cliente_id: clienteId, veiculo_id: veiculoId, defeito: f.defeito.trim() || null, km,
       }).select("id").single();
       if (o.error) throw o.error;
       router.push(`/painel/os/${o.data.id}`);
     } catch (x) {
-      setErr((x as { message?: string }).message ?? "Não foi possível salvar.");
+      // não deixa cliente "solto" se algo falhou no meio
+      if (novoClienteId) await supabase.from("clientes").delete().eq("id", novoClienteId);
+      const msg = (x as { message?: string }).message ?? "";
+      setErr(msg.includes("duplicate") ? "Essa placa já está cadastrada. Busque a placa de novo." : `Não foi possível salvar: ${msg || "erro desconhecido"}`);
       setBusy(false);
     }
   }
@@ -107,13 +120,13 @@ export default function NovaOS() {
                 <div><label htmlFor="modelo" className={lbl}>Modelo</label>
                   <input id="modelo" className={input} placeholder="Ex.: Gol 1.0" value={f.modelo} onChange={(e) => set("modelo", e.target.value)} /></div>
                 <div><label htmlFor="ano" className={lbl}>Ano</label>
-                  <input id="ano" inputMode="numeric" className={input} value={f.ano} onChange={(e) => set("ano", e.target.value)} /></div>
+                  <input id="ano" inputMode="numeric" maxLength={4} placeholder="2015" className={input} value={f.ano} onChange={(e) => set("ano", e.target.value)} /></div>
               </div>
             </div>
           )}
 
           <label htmlFor="km" className={lbl}>Quilometragem atual</label>
-          <input id="km" inputMode="numeric" className={input} value={f.km} onChange={(e) => set("km", e.target.value)} />
+          <input id="km" inputMode="numeric" placeholder="Ex.: 85500" className={input} value={f.km} onChange={(e) => set("km", e.target.value)} />
           <label htmlFor="defeito" className={lbl}>Defeito relatado pelo cliente</label>
           <textarea id="defeito" rows={3} className={input} value={f.defeito} onChange={(e) => set("defeito", e.target.value)} />
 
