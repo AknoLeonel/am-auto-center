@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { papelAtual, ehGestao } from "@/lib/papel";
+import { NotificacoesToggle } from "@/components/NotificacoesToggle";
 import { card } from "@/components/ui";
 
 type Item = [href: string, titulo: string, desc: string, quem: "todos" | "gestao" | "dono"];
@@ -39,6 +40,9 @@ export default async function Mais() {
           </li>
         ))}
       </ul>
+      <div className="mt-6">
+        <NotificacoesToggle chavePublica={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null} />
+      </div>
     </div>
   );
 }

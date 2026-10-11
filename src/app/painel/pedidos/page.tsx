@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { mudarPedido } from "../actions";
-import { AutoRefresh } from "@/components/AutoRefresh";
 import { card } from "@/components/ui";
 
 type P = { id: string; tipo: string; nome: string | null; veiculo: string | null; mensagem: string; status: string; criado_em: string };
@@ -22,7 +21,6 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
 
   return (
     <div className="mx-auto max-w-2xl">
-      <AutoRefresh />
       <h1 className="font-display text-4xl font-bold">Pedidos do site</h1>
       <p className="text-mute">Peças, guincho e orçamentos que os clientes enviaram pelo site. A conversa continua no WhatsApp da oficina.</p>
 

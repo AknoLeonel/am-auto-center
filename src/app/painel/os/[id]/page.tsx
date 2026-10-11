@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { STATUS, statusLabel, brl, dataBR, waTo } from "@/lib/painel";
-import { delItem, mudarStatus, salvarObs, removerFoto } from "../../actions";
+import { site } from "@/lib/site";
+import { statusLabel, brl, dataBR, waTo } from "@/lib/painel";
+import { delItem, removerFoto } from "../../actions";
 import { ItemForm } from "@/components/ItemForm";
 import { FotoUploader } from "@/components/FotoUploader";
 import { Lembretes } from "@/components/Lembretes";
@@ -11,14 +12,16 @@ import { ChecklistOS } from "@/components/ChecklistOS";
 import { ResponsavelOS } from "@/components/ResponsavelOS";
 import { PagamentosOS } from "@/components/PagamentosOS";
 import { LinhaTempoOS } from "@/components/LinhaTempoOS";
-import { SubmitButton } from "@/components/ui/SubmitButton";
-import { input, btnPrimary, btnWa, btnGhost, card } from "@/components/ui";
+import { StatusOS } from "@/components/StatusOS";
+import { ObsOS } from "@/components/ObsOS";
+import { PendentesOS } from "@/components/PendentesOS";
+import { btnWa, btnGhost, card } from "@/components/ui";
 
 type Item = { id: string; tipo: "servico" | "peca"; descricao: string; qtd: number; valor_unit: number };
 type OS = {
   id: string; numero: number; status: string; defeito: string | null; km: number | null;
   observacoes: string | null; criado_em: string;
-  mecanico_id: string | null; garantia_dias: number; entregue_em: string | null;
+  token_publico: string; mecanico_id: string | null; garantia_dias: number; entregue_em: string | null;
   clientes: { nome: string; telefone: string | null };
   veiculos: { id: string; placa: string; modelo: string | null; ano: number | null };
 };
@@ -28,7 +31,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
   const supabase = await createClient();
 
   const o = await supabase.from("ordens_servico")
-    .select("id,numero,status,defeito,km,observacoes,criado_em,mecanico_id,garantia_dias,entregue_em,clientes(nome,telefone),veiculos(id,placa,modelo,ano)")
+    .select("id,numero,status,defeito,km,observacoes,criado_em,token_publico,mecanico_id,garantia_dias,entregue_em,clientes(nome,telefone),veiculos(id,placa,modelo,ano)")
     .eq("id", id).maybeSingle();
   if (!o.data) notFound();
   const os = o.data as unknown as OS;
@@ -61,9 +64,15 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
     `Olá, ${nome1}! Seu ${veic} (placa ${os.veiculos.placa}) está pronto para retirada na AM Auto Center.` +
     (total > 0 ? ` Valor total: ${brl(total)}.` : "") + " Aguardamos você!";
 
+  const msgAcompanhar =
+    `Olá, ${nome1}! Acompanhe o andamento do seu ${veic} (placa ${os.veiculos.placa}) na AM Auto Center, em tempo real: ` +
+    `${site.url}/acompanhar/${os.token_publico}`;
+
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Link href="/painel" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand">← Voltar às ordens</Link>
+
+      <PendentesOS osId={os.id} />
 
       <section className={card}>
         <p className="text-sm text-mute">OS {os.numero} · aberta em {dataBR(os.criado_em)}</p>
@@ -72,16 +81,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <p className="text-mute">{os.clientes.nome}{os.clientes.telefone ? ` · ${os.clientes.telefone}` : ""}</p>
         {os.defeito && <p className="mt-3 rounded-md bg-paper p-3 text-sm"><strong>Defeito relatado:</strong> {os.defeito}</p>}
 
-        <form action={mudarStatus} className="mt-4">
-          <input type="hidden" name="osId" value={os.id} />
-          <p className="mb-2 text-sm font-semibold">Situação: <span className="text-brand">{statusLabel(os.status)}</span></p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {STATUS.map(([k, l]) => (
-              <button key={k} name="status" value={k} disabled={os.status === k} aria-pressed={os.status === k}
-                className={`min-h-12 rounded-lg border-2 px-2 text-sm font-bold ${os.status === k ? "border-brand bg-brand text-white" : "border-line bg-white active:bg-paper"}`}>{l}</button>
-            ))}
-          </div>
-        </form>
+        <StatusOS osId={os.id} status={os.status} />
       </section>
 
       <section className={card}>
@@ -109,7 +109,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <p className="mt-3 flex justify-between border-t border-line pt-3 font-display text-3xl font-bold">
           <span>Total</span><span>{brl(total)}</span>
         </p>
-        <ItemForm key={itens.length} osId={os.id} pecas={pecas} />
+        <ItemForm osId={os.id} pecas={pecas} />
       </section>
 
       <section className={card}>
@@ -132,12 +132,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <FotoUploader osId={os.id} />
       </section>
 
-      <form action={salvarObs} className={card}>
-        <input type="hidden" name="osId" value={os.id} />
-        <label htmlFor="obs" className="font-display text-3xl font-bold">Observações internas</label>
-        <textarea id="obs" name="obs" rows={3} defaultValue={os.observacoes ?? ""} className={`${input} mt-2`} />
-        <SubmitButton className={`${btnPrimary} mt-3`}>Salvar observações</SubmitButton>
-      </form>
+      <ObsOS osId={os.id} inicial={os.observacoes ?? ""} />
 
       <PagamentosOS osId={os.id} total={total} />
 
@@ -151,6 +146,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
 
       <section className="grid gap-2 sm:grid-cols-2">
         <a href={waTo(os.clientes.telefone, msgOrcamento)} target="_blank" rel="noopener" className={btnWa}>Enviar orçamento no WhatsApp</a>
+        <a href={waTo(os.clientes.telefone, msgAcompanhar)} target="_blank" rel="noopener" className={btnWa}>Enviar link de acompanhamento</a>
         <a href={waTo(os.clientes.telefone, msgPronto)} target="_blank" rel="noopener" className={btnWa}>Avisar: carro pronto</a>
         <Link href={`/painel/os/${id}/imprimir`} className={`${btnGhost} sm:col-span-2`}>Imprimir ou salvar PDF</Link>
         {!os.clientes.telefone && <p className="text-sm text-mute sm:col-span-2">Sem telefone cadastrado: o WhatsApp abrirá sem destinatário.</p>}

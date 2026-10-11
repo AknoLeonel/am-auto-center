@@ -3,6 +3,9 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { listar } from "@/lib/fila";
+import { StatusConexao } from "./StatusConexao";
+import { TempoReal } from "./TempoReal";
 
 const nav = [
   ["Ordens", "/painel"],
@@ -26,6 +29,17 @@ export function PainelShell({ children, novos }: { children: React.ReactNode; no
     return () => sub.subscription.unsubscribe();
   }, [router]);
 
+  async function sair() {
+    // Alterações que ainda não subiram pertencem a este usuário: avisa antes de sair.
+    const pend = (await listar()).filter((o) => !o.erro).length;
+    if (pend > 0 && !confirm(`Há ${pend} ${pend === 1 ? "alteração" : "alterações"} que ainda não foram enviadas (sem sinal). Sair mesmo assim? Elas sobem quando você entrar de novo.`)) return;
+    // Páginas guardadas para uso offline contêm dados da oficina: apaga ao sair.
+    navigator.serviceWorker?.controller?.postMessage("limpar");
+    await supabase.auth.signOut();
+    router.replace("/login");
+    router.refresh();
+  }
+
   const active = (h: string) => (h === "/painel/mais" ? dentroDeMais.some((p) => path.startsWith(p)) : h === "/painel" ? path === "/painel" || path.startsWith("/painel/os") : path.startsWith(h));
   const badge = (h: string) =>
     (h === "/painel/pedidos" || h === "/painel/mais") && novos > 0 ? <span className="ml-1 rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">{novos}</span> : null;
@@ -41,9 +55,12 @@ export function PainelShell({ children, novos }: { children: React.ReactNode; no
             ))}
           </nav>
           <button type="button" className="rounded-md px-3 py-2 text-sm font-semibold text-white/75 hover:text-white"
-            onClick={async () => { await supabase.auth.signOut(); router.replace("/login"); router.refresh(); }}>Sair</button>
+            onClick={sair}>Sair</button>
         </div>
       </header>
+
+      <StatusConexao />
+      <TempoReal />
 
       <main className="mx-auto max-w-5xl px-4 py-6 pb-28">{children}</main>
 

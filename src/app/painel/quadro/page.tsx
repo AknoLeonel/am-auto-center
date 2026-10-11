@@ -2,7 +2,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS } from "@/lib/painel";
 import { mudarStatus } from "../actions";
-import { AutoRefresh } from "@/components/AutoRefresh";
 import { card } from "@/components/ui";
 
 const COLUNAS = STATUS.filter(([k]) => k !== "entregue" && k !== "cancelada");
@@ -21,7 +20,6 @@ export default async function Quadro() {
 
   return (
     <>
-      <AutoRefresh />
       <h1 className="font-display text-4xl font-bold">Quadro da oficina</h1>
       <p className="text-mute">Toque em &quot;Avançar&quot; para mover o carro para a próxima etapa.</p>
 
