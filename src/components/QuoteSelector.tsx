@@ -14,7 +14,7 @@ export function QuoteSelector() {
     : defaultMsg;
  
   return (
-    <div className="rounded-xl border-t-[6px] border-signal bg-white text-ink p-5 shadow-xl sm:p-6">
+    <div data-origem="cotacao-hero" className="rounded-xl border-t-[6px] border-signal bg-white text-ink p-5 shadow-xl sm:p-6">
       <h2 className="font-display text-3xl font-bold leading-none">Qual serviço você precisa?</h2>
       <p className="mt-2 text-sm text-mute">Escolha e continue no WhatsApp com a mensagem pronta.</p>
       <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Serviços">

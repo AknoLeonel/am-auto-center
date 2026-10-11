@@ -12,6 +12,7 @@ const ITENS: Item[] = [
   ["/painel/estoque", "Estoque", "Peças, preços e alerta de estoque baixo", "todos"],
   ["/painel/financeiro/receber", "Contas a receber", "OS com saldo em aberto e cobrança pelo WhatsApp", "gestao"],
   ["/painel/relatorios", "Relatórios", "Exportar OS, pagamentos e estoque em CSV", "gestao"],
+  ["/painel/site", "Site e conversões", "Visitas, cliques no WhatsApp e de onde vêm os clientes", "gestao"],
   ["/painel/financeiro", "Financeiro", "Receita, margem, ticket médio e desempenho", "dono"],
   ["/painel/auditoria", "Auditoria", "Quem mudou o quê e quando", "dono"],
 ];
