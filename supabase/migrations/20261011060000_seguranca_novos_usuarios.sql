@@ -5,3 +5,5 @@
 alter table public.perfis alter column ativo set default false;
 
 -- Quem já era ativo continua ativo. Só os cadastros futuros mudam.
+
+-- FIM: 20261011060000_seguranca_novos_usuarios.sql (se você vê esta linha no editor, colou o arquivo inteiro)

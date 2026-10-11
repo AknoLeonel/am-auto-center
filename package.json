@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "db:setup": "node scripts/juntar-migrations.mjs"
+    "db:setup": "node scripts/juntar-migrations.mjs",
+    "db:aplicar": "node scripts/aplicar-migrations.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
@@ -27,6 +28,7 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "pg": "^8.23.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

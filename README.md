@@ -8,8 +8,23 @@ Next.js 16 · React 19 · Tailwind 4 · Supabase. Veja o roadmap em [PLANO.md](P
 Nenhuma alteração de código é necessária. O que falta é **configurar o Supabase e a Vercel**:
 
 1. **Crie o seu usuário** no Supabase: *Authentication > Users > Add user* (e-mail e senha). Ele será o **dono**.
-2. **Instale o banco**: *SQL Editor > New query*, cole todo o conteúdo de [`supabase/setup-completo.sql`](supabase/setup-completo.sql) e clique em **Run**.
-   Pode rodar de novo quando houver novas versões; nada é apagado. (Se o seu usuário foi criado *depois* de rodar, veja o passo 4.)
+2. **Instale o banco** (escolha UMA das opções):
+   - **Opção A, por comando (mais segura, sem copiar e colar):** no Supabase clique em **Connect** (topo da página) > **Session pooler**
+     e copie a *Connection string*; troque `[YOUR-PASSWORD]` pela senha do banco (se não lembra: *Project Settings > Database > Reset database
+     password*). Depois, no terminal do VS Code, dentro da pasta do projeto:
+     ```bash
+     git pull
+     npm install
+     npm run db:aplicar -- "postgresql://postgres.xxxx:SUASENHA@aws-0-regiao.pooler.supabase.com:5432/postgres"
+     ```
+     Ele aplica as 7 migrations em ordem e mostra ✔ ou ✖ em cada uma. Pode rodar de novo quando houver versões novas; nada é apagado.
+     **Nunca compartilhe essa senha** (nem comigo, nem em mensagens ou prints).
+   - **Opção B, colando no SQL Editor:** cole o conteúdo de [`supabase/setup-completo.sql`](supabase/setup-completo.sql) e clique em **Run**.
+     **Cuidado ao copiar:** na tela do GitHub, `Ctrl+A` copia só as ~100 linhas visíveis e o SQL fica cortado (erro
+     *"unterminated dollar-quoted string"*). Use o botão **Copy raw file** (ícone no canto superior direito do arquivo) ou abra o arquivo no
+     VS Code e use `Ctrl+A`, `Ctrl+C`. Confira se a **última linha** colada diz `-- FIM: ...`; se não disser, a colagem veio incompleta.
+     Se o editor reclamar, cole um arquivo de `supabase/migrations/` por vez, na ordem dos nomes.
+   (Se o seu usuário foi criado *depois* de rodar, veja o passo 4.)
 3. **Variáveis na Vercel** (*Project > Settings > Environment Variables*, depois faça um novo deploy):
    | Variável | Obrigatória | Onde achar |
    |---|---|---|

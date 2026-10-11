@@ -107,3 +107,5 @@ do $$ declare t text; begin
     end loop;
   end if;
 end $$;
+
+-- FIM: 20261011040000_fase4_pwa_tempo_real.sql (se você vê esta linha no editor, colou o arquivo inteiro)

@@ -4,6 +4,8 @@ import { card } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
+const REPO = "https://github.com/AknoLeonel/am-auto-center";
+
 // Mostra o que falta para o sistema funcionar (banco e configuração). Só diz se cada variável existe, nunca o valor.
 export default async function Diagnostico() {
   const supabase = await createClient();
@@ -24,10 +26,15 @@ export default async function Diagnostico() {
           <p className="font-display text-2xl font-bold">Faltam {faltaObrigatorio.length} {faltaObrigatorio.length === 1 ? "item" : "itens"}</p>
           {migs.length > 0 && (
             <>
-              <p className="mt-1">O banco de dados está desatualizado. No Supabase, abra <strong>SQL Editor</strong>, cole o conteúdo do arquivo{" "}
-                <code className="rounded bg-paper px-1">supabase/setup-completo.sql</code> (do repositório) e clique em <strong>Run</strong>. Pode rodar mais de uma vez.</p>
+              <p className="mt-1">O banco de dados está desatualizado. Rode <code className="rounded bg-paper px-1">npm run db:aplicar</code> no VS Code
+                (instruções no passo 2 do README) ou cole os arquivos abaixo, <strong>um por vez e na ordem</strong>, no <strong>SQL Editor</strong> do Supabase.
+                Use o botão <strong>Copy raw file</strong> do GitHub e confira se a última linha colada começa com <code className="rounded bg-paper px-1">-- FIM</code>.</p>
               <p className="mt-2 text-sm text-mute">Atualizações que faltam:</p>
-              <ul className="list-disc pl-5 text-sm">{migs.map((m) => <li key={m}>{m}</li>)}</ul>
+              <ol className="list-decimal pl-5 text-sm">
+                {migs.map((m) => (
+                  <li key={m}><a className="text-brand underline" href={`${REPO}/blob/master/supabase/migrations/${m}`} target="_blank" rel="noopener">{m}</a></li>
+                ))}
+              </ol>
             </>
           )}
         </div>

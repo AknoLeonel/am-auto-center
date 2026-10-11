@@ -218,3 +218,5 @@ begin
 end $$;
 revoke all on function public.ajustar_estoque(uuid, numeric) from public, anon;
 grant execute on function public.ajustar_estoque(uuid, numeric) to authenticated;
+
+-- FIM: 20261011020000_fase2_operacao.sql (se você vê esta linha no editor, colou o arquivo inteiro)
