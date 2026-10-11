@@ -1,21 +1,13 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { exigirEquipe as equipe } from "@/lib/sessao";
+import { CHECKLIST, type Momento } from "@/lib/checklist";
 import { mesesDepois } from "@/lib/painel";
-import { itemSchema, novaOSSchema, pedidoStatusSchema, primeiroErro, statusSchema } from "@/lib/validacao";
+import { garantiaSchema, itemSchema, novaOSSchema, pedidoStatusSchema, primeiroErro, statusSchema } from "@/lib/validacao";
 import { z } from "zod";
 
 export type Estado = { erro?: string };
-
-// Toda action confere a sessão: Server Actions são alcançáveis por POST direto.
-// A autorização de verdade é o RLS no banco.
-async function equipe() {
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  if (!data?.claims) redirect("/login");
-  return supabase;
-}
 
 const campo = (f: FormData, k: string) => String(f.get(k) ?? "");
 
@@ -43,7 +35,9 @@ export async function mudarStatus(f: FormData) {
   const osId = z.uuid().parse(campo(f, "osId"));
   const status = statusSchema.parse(campo(f, "status"));
   const { error } = await supabase.from("ordens_servico").update({
-    status, concluido_em: status === "pronto" || status === "entregue" ? new Date().toISOString() : null,
+    status,
+    concluido_em: status === "pronto" || status === "entregue" ? new Date().toISOString() : null,
+    entregue_em: status === "entregue" ? new Date().toISOString() : null,
   }).eq("id", osId);
   if (error) throw new Error("Não foi possível mudar a situação.");
   revalidatePath("/painel", "layout");
@@ -62,9 +56,15 @@ export async function addItem(_: Estado, f: FormData): Promise<Estado> {
   const supabase = await equipe();
   const p = itemSchema.safeParse(Object.fromEntries([...f].map(([k, v]) => [k, String(v)])));
   if (!p.success) return { erro: primeiroErro(p.error) };
-  const { osId, tipo, descricao, qtd, valor } = p.data;
-  const { error } = await supabase.from("os_itens").insert({ os_id: osId, tipo, descricao, qtd, valor_unit: valor });
-  if (error) return { erro: "Não foi possível adicionar o item." };
+  const { osId, pecaId, tipo, descricao, qtd, valor } = p.data;
+  const { error } = await supabase.from("os_itens").insert({
+    os_id: osId, tipo: pecaId ? "peca" : tipo, descricao, qtd, valor_unit: valor, peca_id: pecaId,
+  });
+  if (error) {
+    // check_violation em pecas_estoque.qtd: a baixa deixaria o estoque negativo
+    if (error.code === "23514") return { erro: "Estoque insuficiente para essa quantidade." };
+    return { erro: "Não foi possível adicionar o item." };
+  }
   revalidatePath(`/painel/os/${osId}`);
   return {};
 }
@@ -138,4 +138,34 @@ export async function removerFoto(f: FormData) {
     .select("caminho").single();
   if (data) await supabase.storage.from("os-fotos").remove([data.caminho]);
   revalidatePath(`/painel/os/${osId}`);
+}
+
+export async function salvarResponsavel(f: FormData) {
+  const supabase = await equipe();
+  const p = garantiaSchema.parse({ osId: campo(f, "osId"), mecanicoId: campo(f, "mecanicoId"), garantia: campo(f, "garantia") });
+  const { error } = await supabase.from("ordens_servico")
+    .update({ mecanico_id: p.mecanicoId, garantia_dias: p.garantia }).eq("id", p.osId);
+  if (error) throw new Error("Não foi possível salvar.");
+  revalidatePath(`/painel/os/${p.osId}`);
+}
+
+export async function salvarChecklist(f: FormData) {
+  const supabase = await equipe();
+  const osId = z.uuid().parse(campo(f, "osId"));
+  const momento = z.enum(["entrada", "saida"]).parse(campo(f, "momento")) as Momento;
+  // Só aceita itens da lista oficial.
+  const validos: readonly string[] = CHECKLIST[momento].itens;
+  const marcados = f.getAll("item").map(String).filter((i) => validos.includes(i));
+  const { error } = await supabase.rpc("salvar_checklist", { p_os: osId, p_momento: momento, p_itens: marcados });
+  if (error) throw new Error("Não foi possível salvar o checklist.");
+  revalidatePath(`/painel/os/${osId}`);
+}
+
+// Congela os itens atuais e devolve o link público para o cliente aprovar.
+export async function gerarOrcamento(f: FormData) {
+  const supabase = await equipe();
+  const osId = z.uuid().parse(campo(f, "osId"));
+  const { error } = await supabase.rpc("criar_orcamento", { p_os: osId });
+  if (error) throw new Error(error.code === "22023" ? error.message : "Não foi possível gerar o orçamento.");
+  revalidatePath("/painel", "layout");
 }

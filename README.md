@@ -36,3 +36,16 @@ quando não há sessão. É uma checagem otimista: a proteção real dos dados �
 
 As fotos vão para o bucket privado `os-fotos` (Supabase Storage), criado pela migration da Fase 1.
 São reduzidas no aparelho antes do envio e exibidas por URL assinada (1 hora).
+
+## Orçamento digital
+
+Na OS, "Gerar link de orçamento" congela os itens atuais e cria um link público (`/o/<token>`).
+O cliente vê os itens no celular e aprova (com o nome) ou recusa; o aceite fica registrado e a OS
+avança sozinha para "Em serviço". Gerar um novo orçamento invalida o link anterior.
+O link é a credencial: use uma `NEXT_PUBLIC_SITE_URL` correta em produção.
+
+## Estoque
+
+Toda a equipe vê o estoque; só `dono` e `atendente` cadastram e ajustam peças. Ao lançar uma peça
+do estoque na OS, a baixa é automática (e devolvida se o item for removido). O custo é guardado no
+item, para o cálculo de margem da Fase 3.

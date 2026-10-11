@@ -8,9 +8,14 @@ const nav = [
   ["Ordens", "/painel"],
   ["Quadro", "/painel/quadro"],
   ["Nova OS", "/painel/nova"],
+  ["Agenda", "/painel/agenda"],
   ["Pedidos", "/painel/pedidos"],
   ["Retornos", "/painel/retornos"],
+  ["Estoque", "/painel/estoque"],
 ];
+// No celular, o que é menos usado fica atrás de "Mais" (barra de 5 itens, alcançável com o polegar).
+const navCelular = nav.slice(0, 4).concat([["Mais", "/painel/mais"]]);
+const dentroDeMais = ["/painel/mais", "/painel/pedidos", "/painel/retornos", "/painel/estoque"];
 
 export function PainelShell({ children, novos }: { children: React.ReactNode; novos: number }) {
   const router = useRouter();
@@ -21,9 +26,9 @@ export function PainelShell({ children, novos }: { children: React.ReactNode; no
     return () => sub.subscription.unsubscribe();
   }, [router]);
 
-  const active = (h: string) => (h === "/painel" ? path === "/painel" || path.startsWith("/painel/os") : path.startsWith(h));
+  const active = (h: string) => (h === "/painel/mais" ? dentroDeMais.some((p) => path.startsWith(p)) : h === "/painel" ? path === "/painel" || path.startsWith("/painel/os") : path.startsWith(h));
   const badge = (h: string) =>
-    h === "/painel/pedidos" && novos > 0 ? <span className="ml-1 rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">{novos}</span> : null;
+    (h === "/painel/pedidos" || h === "/painel/mais") && novos > 0 ? <span className="ml-1 rounded-full bg-red-600 px-1.5 text-xs font-bold text-white">{novos}</span> : null;
 
   return (
     <div className="min-h-dvh">
@@ -43,7 +48,7 @@ export function PainelShell({ children, novos }: { children: React.ReactNode; no
       <main className="mx-auto max-w-5xl px-4 py-6 pb-28">{children}</main>
 
       <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 bg-asphalt pb-[env(safe-area-inset-bottom)] text-white md:hidden">
-        {nav.map(([t, h]) => (
+        {navCelular.map(([t, h]) => (
           <Link key={h} href={h}
             className={`border-t-4 py-3 text-center text-xs font-semibold ${active(h) ? "border-signal text-white" : "border-transparent text-white/70"}`}>
             {t}{badge(h)}

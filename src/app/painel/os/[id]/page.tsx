@@ -6,6 +6,9 @@ import { delItem, mudarStatus, salvarObs, removerFoto } from "../../actions";
 import { ItemForm } from "@/components/ItemForm";
 import { FotoUploader } from "@/components/FotoUploader";
 import { Lembretes } from "@/components/Lembretes";
+import { OrcamentoOS } from "@/components/OrcamentoOS";
+import { ChecklistOS } from "@/components/ChecklistOS";
+import { ResponsavelOS } from "@/components/ResponsavelOS";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { input, btnPrimary, btnWa, btnGhost, card } from "@/components/ui";
 
@@ -13,6 +16,7 @@ type Item = { id: string; tipo: "servico" | "peca"; descricao: string; qtd: numb
 type OS = {
   id: string; numero: number; status: string; defeito: string | null; km: number | null;
   observacoes: string | null; criado_em: string;
+  mecanico_id: string | null; garantia_dias: number; entregue_em: string | null;
   clientes: { nome: string; telefone: string | null };
   veiculos: { id: string; placa: string; modelo: string | null; ano: number | null };
 };
@@ -22,17 +26,19 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
   const supabase = await createClient();
 
   const o = await supabase.from("ordens_servico")
-    .select("id,numero,status,defeito,km,observacoes,criado_em,clientes(nome,telefone),veiculos(id,placa,modelo,ano)")
+    .select("id,numero,status,defeito,km,observacoes,criado_em,mecanico_id,garantia_dias,entregue_em,clientes(nome,telefone),veiculos(id,placa,modelo,ano)")
     .eq("id", id).maybeSingle();
   if (!o.data) notFound();
   const os = o.data as unknown as OS;
 
-  const [it, h, fo] = await Promise.all([
+  const [it, h, fo, pe] = await Promise.all([
     supabase.from("os_itens").select("id,tipo,descricao,qtd,valor_unit").eq("os_id", id).order("id"),
     supabase.from("ordens_servico").select("id,numero,status,defeito,criado_em")
       .eq("veiculo_id", os.veiculos.id).neq("id", id).order("criado_em", { ascending: false }).limit(10),
     supabase.from("os_fotos").select("id,caminho").eq("os_id", id).order("criado_em"),
+    supabase.from("pecas_estoque").select("id,nome,qtd,preco").eq("ativo", true).gt("qtd", 0).order("nome").limit(300),
   ]);
+  const pecas = (pe.data ?? []).map((p) => ({ id: p.id, nome: p.nome, qtd: Number(p.qtd), preco: Number(p.preco) }));
   const itens = ((it.data ?? []) as Item[]).map((x) => ({ ...x, qtd: Number(x.qtd), valor_unit: Number(x.valor_unit) }));
   const hist = h.data ?? [];
   const fotos = fo.data ?? [];
@@ -101,7 +107,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <p className="mt-3 flex justify-between border-t border-line pt-3 font-display text-3xl font-bold">
           <span>Total</span><span>{brl(total)}</span>
         </p>
-        <ItemForm osId={os.id} />
+        <ItemForm key={itens.length} osId={os.id} pecas={pecas} />
       </section>
 
       <section className={card}>
@@ -130,6 +136,12 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <textarea id="obs" name="obs" rows={3} defaultValue={os.observacoes ?? ""} className={`${input} mt-2`} />
         <SubmitButton className={`${btnPrimary} mt-3`}>Salvar observações</SubmitButton>
       </form>
+
+      <OrcamentoOS osId={os.id} nome={os.clientes.nome} telefone={os.clientes.telefone} veiculo={veic} qtdItens={itens.length} />
+
+      <ChecklistOS osId={os.id} />
+
+      <ResponsavelOS osId={os.id} mecanicoId={os.mecanico_id} garantia={os.garantia_dias} entregueEm={os.entregue_em} />
 
       <Lembretes osId={os.id} />
 
