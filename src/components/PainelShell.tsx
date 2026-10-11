@@ -15,7 +15,7 @@ const nav = [
 ];
 // No celular, o que é menos usado fica atrás de "Mais" (barra de 5 itens, alcançável com o polegar).
 const navCelular = nav.slice(0, 4).concat([["Mais", "/painel/mais"]]);
-const dentroDeMais = ["/painel/mais", "/painel/pedidos", "/painel/retornos", "/painel/estoque"];
+const dentroDeMais = ["/painel/mais", "/painel/pedidos", "/painel/retornos", "/painel/estoque", "/painel/financeiro", "/painel/relatorios", "/painel/auditoria"];
 
 export function PainelShell({ children, novos }: { children: React.ReactNode; novos: number }) {
   const router = useRouter();

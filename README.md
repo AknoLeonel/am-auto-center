@@ -49,3 +49,17 @@ O link é a credencial: use uma `NEXT_PUBLIC_SITE_URL` correta em produção.
 Toda a equipe vê o estoque; só `dono` e `atendente` cadastram e ajustam peças. Ao lançar uma peça
 do estoque na OS, a baixa é automática (e devolvida se o item for removido). O custo é guardado no
 item, para o cálculo de margem da Fase 3.
+
+## Dados e financeiro (Fase 3)
+
+- **Auditoria** (`/painel/auditoria`, só dono): toda criação, alteração e exclusão nas tabelas de negócio é registrada por
+  trigger, com o usuário e os campos que mudaram. Ninguém consegue editar ou apagar esses registros pelo app.
+- **Linha do tempo da OS**: cada mudança de situação grava quem mudou e quando; o tempo em cada etapa alimenta o dashboard.
+  As OS anteriores à migration ganham uma reconstrução aproximada.
+- **Pagamentos** (dono e atendente): vários por OS (Pix, dinheiro, débito, crédito, transferência). O saldo é
+  `total da OS - pagamentos`. Só o dono estorna. OS com pagamento não pode ser apagada.
+- **Financeiro** (`/painel/financeiro`, só dono): receita (pela data de entrega), margem, ticket médio, tempo médio,
+  aprovação de orçamentos, clientes que voltaram e rankings. A margem usa só o custo das peças do estoque;
+  peça avulsa e mão de obra entram com custo zero.
+- **Relatórios**: CSV (separador `;`, UTF-8 com BOM, vírgula decimal) de OS, pagamentos e estoque.
+- Datas e períodos usam o horário da Bahia (UTC-3).
