@@ -4,7 +4,7 @@ import { papelAtual, ehGestao } from "@/lib/papel";
 import { NotificacoesToggle } from "@/components/NotificacoesToggle";
 import { card } from "@/components/ui";
 
-type Item = [href: string, titulo: string, desc: string, quem: "todos" | "gestao" | "dono"];
+type Item = [href: string, titulo: string, desc: string, quem: "todos" | "gestao" | "dono" | "dono-ou-sem-perfil"];
 
 const ITENS: Item[] = [
   ["/painel/pedidos", "Pedidos do site", "Peças, guincho e orçamentos enviados pelos clientes", "todos"],
@@ -15,6 +15,8 @@ const ITENS: Item[] = [
   ["/painel/site", "Site e conversões", "Visitas, cliques no WhatsApp e de onde vêm os clientes", "gestao"],
   ["/painel/financeiro", "Financeiro", "Receita, margem, ticket médio e desempenho", "dono"],
   ["/painel/auditoria", "Auditoria", "Quem mudou o quê e quando", "dono"],
+  ["/painel/equipe", "Equipe", "Liberar usuários novos e definir o papel de cada um", "dono"],
+  ["/painel/diagnostico", "Diagnóstico do sistema", "Confere se o banco e as configurações estão completos", "dono-ou-sem-perfil"],
 ];
 
 export default async function Mais() {
@@ -23,7 +25,7 @@ export default async function Mais() {
     supabase.from("pedidos_site").select("id", { count: "exact", head: true }).eq("status", "novo"),
     papelAtual(supabase),
   ]);
-  const visiveis = ITENS.filter(([, , , q]) => q === "todos" || (q === "gestao" && ehGestao(papel)) || (q === "dono" && papel === "dono"));
+  const visiveis = ITENS.filter(([, , , q]) => q === "todos" || (q === "gestao" && ehGestao(papel)) || (q === "dono" && papel === "dono") || (q === "dono-ou-sem-perfil" && (papel === "dono" || papel === null)));
 
   return (
     <div className="mx-auto max-w-xl">
