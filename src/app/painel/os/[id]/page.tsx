@@ -1,11 +1,13 @@
-"use client";
-import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { STATUS, statusLabel, brl, dataBR, num, waTo } from "@/lib/painel";
-import { input, btnPrimary, btnWa, card } from "@/components/ui";
-import { LembreteForm } from "@/components/LembreteForm";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { STATUS, statusLabel, brl, dataBR, waTo } from "@/lib/painel";
+import { delItem, mudarStatus, salvarObs, removerFoto } from "../../actions";
+import { ItemForm } from "@/components/ItemForm";
+import { FotoUploader } from "@/components/FotoUploader";
+import { Lembretes } from "@/components/Lembretes";
+import { SubmitButton } from "@/components/ui/SubmitButton";
+import { input, btnPrimary, btnWa, btnGhost, card } from "@/components/ui";
 
 type Item = { id: string; tipo: "servico" | "peca"; descricao: string; qtd: number; valor_unit: number };
 type OS = {
@@ -14,62 +16,34 @@ type OS = {
   clientes: { nome: string; telefone: string | null };
   veiculos: { id: string; placa: string; modelo: string | null; ano: number | null };
 };
-type Hist = { id: string; numero: number; status: string; defeito: string | null; criado_em: string };
 
-export default function DetalheOS() {
-  const { id } = useParams<{ id: string }>();
-  const [os, setOs] = useState<OS | null>(null);
-  const [itens, setItens] = useState<Item[]>([]);
-  const [hist, setHist] = useState<Hist[]>([]);
-  const [obs, setObs] = useState("");
-  const [novo, setNovo] = useState({ tipo: "servico", descricao: "", qtd: "1", valor: "" });
-  const [err, setErr] = useState("");
+export default async function DetalheOS({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
 
-  const load = useCallback(async () => {
-    const o = await supabase.from("ordens_servico")
-      .select("id,numero,status,defeito,km,observacoes,criado_em,clientes(nome,telefone),veiculos(id,placa,modelo,ano)")
-      .eq("id", id).single();
-    if (o.error) { setErr("Ordem não encontrada."); return; }
-    const row = o.data as unknown as OS;
-    setOs(row); setObs(row.observacoes ?? "");
-    const it = await supabase.from("os_itens").select("id,tipo,descricao,qtd,valor_unit").eq("os_id", id);
-    setItens(((it.data ?? []) as Item[]).map((x) => ({ ...x, qtd: Number(x.qtd), valor_unit: Number(x.valor_unit) })));
-    const h = await supabase.from("ordens_servico").select("id,numero,status,defeito,criado_em")
-      .eq("veiculo_id", row.veiculos.id).neq("id", id).order("criado_em", { ascending: false }).limit(10);
-    setHist((h.data ?? []) as Hist[]);
-  }, [id]);
+  const o = await supabase.from("ordens_servico")
+    .select("id,numero,status,defeito,km,observacoes,criado_em,clientes(nome,telefone),veiculos(id,placa,modelo,ano)")
+    .eq("id", id).maybeSingle();
+  if (!o.data) notFound();
+  const os = o.data as unknown as OS;
 
-  useEffect(() => { load(); }, [load]);
-
-  if (err) return <p className="text-red-700">{err}</p>;
-  if (!os) return <p className="text-mute">Carregando...</p>;
+  const [it, h, fo] = await Promise.all([
+    supabase.from("os_itens").select("id,tipo,descricao,qtd,valor_unit").eq("os_id", id).order("id"),
+    supabase.from("ordens_servico").select("id,numero,status,defeito,criado_em")
+      .eq("veiculo_id", os.veiculos.id).neq("id", id).order("criado_em", { ascending: false }).limit(10),
+    supabase.from("os_fotos").select("id,caminho").eq("os_id", id).order("criado_em"),
+  ]);
+  const itens = ((it.data ?? []) as Item[]).map((x) => ({ ...x, qtd: Number(x.qtd), valor_unit: Number(x.valor_unit) }));
+  const hist = h.data ?? [];
+  const fotos = fo.data ?? [];
+  const urls = fotos.length
+    ? (await supabase.storage.from("os-fotos").createSignedUrls(fotos.map((f) => f.caminho), 3600)).data ?? []
+    : [];
+  const urlDe = (caminho: string) => urls.find((u) => u.path === caminho)?.signedUrl ?? undefined;
 
   const total = itens.reduce((s, i) => s + i.qtd * i.valor_unit, 0);
   const veic = `${os.veiculos.modelo || "veículo"}${os.veiculos.ano ? " " + os.veiculos.ano : ""}`;
   const nome1 = os.clientes.nome.split(" ")[0];
-
-  async function mudarStatus(s: string) {
-    await supabase.from("ordens_servico").update({
-      status: s, concluido_em: s === "pronto" || s === "entregue" ? new Date().toISOString() : null,
-    }).eq("id", id);
-    load();
-  }
-  async function salvarObs() {
-    if (obs !== (os?.observacoes ?? "")) await supabase.from("ordens_servico").update({ observacoes: obs || null }).eq("id", id);
-  }
-  async function addItem(e: React.FormEvent) {
-    e.preventDefault();
-    if (!novo.descricao.trim()) return;
-    await supabase.from("os_itens").insert({
-      os_id: id, tipo: novo.tipo, descricao: novo.descricao.trim(), qtd: num(novo.qtd) || 1, valor_unit: num(novo.valor),
-    });
-    setNovo({ ...novo, descricao: "", qtd: "1", valor: "" });
-    load();
-  }
-  async function delItem(itemId: string) {
-    await supabase.from("os_itens").delete().eq("id", itemId);
-    load();
-  }
 
   const msgOrcamento =
     `Olá, ${nome1}! Segue o orçamento do seu ${veic} (placa ${os.veiculos.placa}) na AM Auto Center:\n\n` +
@@ -81,7 +55,7 @@ export default function DetalheOS() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <Link href="/painel" className="text-sm font-semibold text-brand">← Voltar às ordens</Link>
+      <Link href="/painel" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand">← Voltar às ordens</Link>
 
       <section className={card}>
         <p className="text-sm text-mute">OS {os.numero} · aberta em {dataBR(os.criado_em)}</p>
@@ -89,10 +63,17 @@ export default function DetalheOS() {
         <p className="mt-1 font-semibold">{veic}{os.km ? ` · ${os.km.toLocaleString("pt-BR")} km` : ""}</p>
         <p className="text-mute">{os.clientes.nome}{os.clientes.telefone ? ` · ${os.clientes.telefone}` : ""}</p>
         {os.defeito && <p className="mt-3 rounded-md bg-paper p-3 text-sm"><strong>Defeito relatado:</strong> {os.defeito}</p>}
-        <label htmlFor="status" className="mb-1 mt-4 block text-sm font-semibold">Situação</label>
-        <select id="status" className={input} value={os.status} onChange={(e) => mudarStatus(e.target.value)}>
-          {STATUS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-        </select>
+
+        <form action={mudarStatus} className="mt-4">
+          <input type="hidden" name="osId" value={os.id} />
+          <p className="mb-2 text-sm font-semibold">Situação: <span className="text-brand">{statusLabel(os.status)}</span></p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {STATUS.map(([k, l]) => (
+              <button key={k} name="status" value={k} disabled={os.status === k} aria-pressed={os.status === k}
+                className={`min-h-12 rounded-lg border-2 px-2 text-sm font-bold ${os.status === k ? "border-brand bg-brand text-white" : "border-line bg-white active:bg-paper"}`}>{l}</button>
+            ))}
+          </div>
+        </form>
       </section>
 
       <section className={card}>
@@ -107,7 +88,11 @@ export default function DetalheOS() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold">{brl(i.qtd * i.valor_unit)}</span>
-                  <button type="button" onClick={() => delItem(i.id)} aria-label={`Remover ${i.descricao}`} className="h-10 w-10 text-xl text-red-700">×</button>
+                  <form action={delItem}>
+                    <input type="hidden" name="osId" value={os.id} />
+                    <input type="hidden" name="itemId" value={i.id} />
+                    <button aria-label={`Remover ${i.descricao}`} className="h-11 w-11 text-xl text-red-700">×</button>
+                  </form>
                 </div>
               </li>
             ))}
@@ -116,29 +101,42 @@ export default function DetalheOS() {
         <p className="mt-3 flex justify-between border-t border-line pt-3 font-display text-3xl font-bold">
           <span>Total</span><span>{brl(total)}</span>
         </p>
-
-        <form onSubmit={addItem} className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-[7rem_1fr_5rem_7rem_auto]">
-          <select aria-label="Tipo" className={input} value={novo.tipo} onChange={(e) => setNovo({ ...novo, tipo: e.target.value })}>
-            <option value="servico">Serviço</option><option value="peca">Peça</option>
-          </select>
-          <input aria-label="Descrição" placeholder="Descrição" className={`${input} col-span-2 sm:col-span-1`} value={novo.descricao} onChange={(e) => setNovo({ ...novo, descricao: e.target.value })} />
-          <input aria-label="Quantidade" inputMode="decimal" placeholder="Qtd" className={input} value={novo.qtd} onChange={(e) => setNovo({ ...novo, qtd: e.target.value })} />
-          <input aria-label="Valor unitário" inputMode="decimal" placeholder="Valor R$" className={input} value={novo.valor} onChange={(e) => setNovo({ ...novo, valor: e.target.value })} />
-          <button className={`${btnPrimary} col-span-2 sm:col-span-1`}>Adicionar</button>
-        </form>
+        <ItemForm osId={os.id} />
       </section>
 
       <section className={card}>
-        <label htmlFor="obs" className="font-display text-3xl font-bold">Observações internas</label>
-        <textarea id="obs" rows={3} className={`${input} mt-2`} value={obs} onChange={(e) => setObs(e.target.value)} onBlur={salvarObs} />
+        <h2 className="font-display text-3xl font-bold">Fotos</h2>
+        {fotos.length > 0 && (
+          <ul className="mt-3 grid grid-cols-3 gap-2">
+            {fotos.map((f) => (
+              <li key={f.id} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={urlDe(f.caminho)} alt="Foto da ordem de serviço" loading="lazy" className="aspect-square w-full rounded-md object-cover" />
+                <form action={removerFoto} className="absolute right-1 top-1">
+                  <input type="hidden" name="osId" value={os.id} />
+                  <input type="hidden" name="id" value={f.id} />
+                  <button aria-label="Remover foto" className="h-9 w-9 rounded-full bg-black/60 text-lg text-white">×</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+        <FotoUploader osId={os.id} />
       </section>
 
-      <LembreteForm osId={id} />
+      <form action={salvarObs} className={card}>
+        <input type="hidden" name="osId" value={os.id} />
+        <label htmlFor="obs" className="font-display text-3xl font-bold">Observações internas</label>
+        <textarea id="obs" name="obs" rows={3} defaultValue={os.observacoes ?? ""} className={`${input} mt-2`} />
+        <SubmitButton className={`${btnPrimary} mt-3`}>Salvar observações</SubmitButton>
+      </form>
+
+      <Lembretes osId={os.id} />
 
       <section className="grid gap-2 sm:grid-cols-2">
         <a href={waTo(os.clientes.telefone, msgOrcamento)} target="_blank" rel="noopener" className={btnWa}>Enviar orçamento no WhatsApp</a>
         <a href={waTo(os.clientes.telefone, msgPronto)} target="_blank" rel="noopener" className={btnWa}>Avisar: carro pronto</a>
-<Link href={`/painel/os/${id}/imprimir`} className="inline-flex min-h-12 items-center justify-center rounded-lg border-2 border-line bg-white px-5 font-bold hover:border-ink sm:col-span-2">Imprimir ou salvar PDF</Link>
+        <Link href={`/painel/os/${id}/imprimir`} className={`${btnGhost} sm:col-span-2`}>Imprimir ou salvar PDF</Link>
         {!os.clientes.telefone && <p className="text-sm text-mute sm:col-span-2">Sem telefone cadastrado: o WhatsApp abrirá sem destinatário.</p>}
       </section>
 
@@ -146,11 +144,11 @@ export default function DetalheOS() {
         <h2 className="font-display text-3xl font-bold">Histórico deste veículo</h2>
         {hist.length === 0 ? <p className="mt-2 text-mute">Primeira passagem pela oficina.</p> : (
           <ul className="mt-2 divide-y divide-line">
-            {hist.map((h) => (
-              <li key={h.id}>
-                <Link href={`/painel/os/${h.id}`} className="flex justify-between gap-3 py-2 hover:text-brand">
-                  <span>{dataBR(h.criado_em)} · {h.defeito || `OS ${h.numero}`}</span>
-                  <span className="shrink-0 text-sm text-mute">{statusLabel(h.status)}</span>
+            {hist.map((x) => (
+              <li key={x.id}>
+                <Link href={`/painel/os/${x.id}`} className="flex min-h-11 items-center justify-between gap-3 py-2 hover:text-brand">
+                  <span>{dataBR(x.criado_em)} · {x.defeito || `OS ${x.numero}`}</span>
+                  <span className="shrink-0 text-sm text-mute">{statusLabel(x.status)}</span>
                 </Link>
               </li>
             ))}

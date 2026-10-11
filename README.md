@@ -31,3 +31,8 @@ Toda tabela tem RLS ligado; o público só consegue **inserir** em `pedidos_site
 
 A sessão fica em cookies (`@supabase/ssr`). O `src/proxy.ts` redireciona `/painel/*` para `/login`
 quando não há sessão. É uma checagem otimista: a proteção real dos dados é o RLS.
+
+## Fotos das ordens de serviço
+
+As fotos vão para o bucket privado `os-fotos` (Supabase Storage), criado pela migration da Fase 1.
+São reduzidas no aparelho antes do envio e exibidas por URL assinada (1 hora).

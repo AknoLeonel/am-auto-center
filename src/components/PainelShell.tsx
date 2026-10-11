@@ -1,30 +1,25 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const nav = [
   ["Ordens", "/painel"],
+  ["Quadro", "/painel/quadro"],
   ["Nova OS", "/painel/nova"],
   ["Pedidos", "/painel/pedidos"],
   ["Retornos", "/painel/retornos"],
 ];
 
-export function PainelShell({ children }: { children: React.ReactNode }) {
+export function PainelShell({ children, novos }: { children: React.ReactNode; novos: number }) {
   const router = useRouter();
   const path = usePathname();
-  const [novos, setNovos] = useState(0);
 
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (!s) router.replace("/login"); });
     return () => sub.subscription.unsubscribe();
   }, [router]);
-
-  useEffect(() => {
-    supabase.from("pedidos_site").select("id", { count: "exact", head: true }).eq("status", "novo")
-      .then(({ count }) => setNovos(count ?? 0));
-  }, [path]);
 
   const active = (h: string) => (h === "/painel" ? path === "/painel" || path.startsWith("/painel/os") : path.startsWith(h));
   const badge = (h: string) =>
@@ -47,10 +42,10 @@ export function PainelShell({ children }: { children: React.ReactNode }) {
 
       <main className="mx-auto max-w-5xl px-4 py-6 pb-28">{children}</main>
 
-      <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 bg-asphalt pb-[env(safe-area-inset-bottom)] text-white md:hidden">
+      <nav aria-label="Principal" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 bg-asphalt pb-[env(safe-area-inset-bottom)] text-white md:hidden">
         {nav.map(([t, h]) => (
           <Link key={h} href={h}
-            className={`border-t-4 py-3 text-center text-sm font-semibold ${active(h) ? "border-signal text-white" : "border-transparent text-white/70"}`}>
+            className={`border-t-4 py-3 text-center text-xs font-semibold ${active(h) ? "border-signal text-white" : "border-transparent text-white/70"}`}>
             {t}{badge(h)}
           </Link>
         ))}

@@ -1,10 +1,8 @@
-"use client";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import { site } from "@/lib/site";
 import { brl, dataBR } from "@/lib/painel";
-import { btnPrimary } from "@/components/ui";
+import { PrintButton } from "@/components/PrintButton";
 
 type Item = { id: string; tipo: string; descricao: string; qtd: number; valor_unit: number };
 type OS = {
@@ -13,30 +11,22 @@ type OS = {
   veiculos: { placa: string; modelo: string | null; ano: number | null };
 };
 
-export default function Imprimir() {
-  const { id } = useParams<{ id: string }>();
-  const [os, setOs] = useState<OS | null>(null);
-  const [itens, setItens] = useState<Item[]>([]);
-
-  useEffect(() => {
-    (async () => {
-      const o = await supabase.from("ordens_servico")
-        .select("numero,defeito,km,criado_em,clientes(nome,telefone),veiculos(placa,modelo,ano)").eq("id", id).single();
-      if (!o.error) setOs(o.data as unknown as OS);
-      const it = await supabase.from("os_itens").select("id,tipo,descricao,qtd,valor_unit").eq("os_id", id);
-      setItens(((it.data ?? []) as Item[]).map((x) => ({ ...x, qtd: Number(x.qtd), valor_unit: Number(x.valor_unit) })));
-    })();
-  }, [id]);
-
-  if (!os) return <p className="text-mute">Carregando...</p>;
+export default async function Imprimir({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const [o, it] = await Promise.all([
+    supabase.from("ordens_servico")
+      .select("numero,defeito,km,criado_em,clientes(nome,telefone),veiculos(placa,modelo,ano)").eq("id", id).maybeSingle(),
+    supabase.from("os_itens").select("id,tipo,descricao,qtd,valor_unit").eq("os_id", id).order("id"),
+  ]);
+  if (!o.data) notFound();
+  const os = o.data as unknown as OS;
+  const itens = ((it.data ?? []) as Item[]).map((x) => ({ ...x, qtd: Number(x.qtd), valor_unit: Number(x.valor_unit) }));
   const total = itens.reduce((s, i) => s + i.qtd * i.valor_unit, 0);
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="no-print mb-4 flex gap-2">
-        <button type="button" className={btnPrimary} onClick={() => window.print()}>Imprimir ou salvar PDF</button>
-        <button type="button" className="min-h-12 px-3 font-semibold underline" onClick={() => window.history.back()}>Voltar</button>
-      </div>
+      <PrintButton />
 
       <article className="border border-line bg-white p-6 text-black sm:p-8">
         <header className="flex items-start justify-between gap-4 border-b-2 border-black pb-4" style={{ display: "flex" }}>
