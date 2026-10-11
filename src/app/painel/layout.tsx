@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PainelShell } from "@/components/PainelShell";
 import { InstallBanner } from "@/components/InstallBanner";
+import { ToastProvider } from "@/components/ui/Toast";
 import { RegistrarSW } from "@/components/RegistrarSW";
 
 export const metadata: Metadata = {
@@ -12,10 +13,12 @@ export const metadata: Metadata = {
 export default function PainelLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <PainelShell>
-        <InstallBanner />
-        {children}
-      </PainelShell>
+      <ToastProvider>
+        <PainelShell>
+          <InstallBanner />
+          {children}
+        </PainelShell>
+      </ToastProvider>
       <RegistrarSW />
     </>
   );

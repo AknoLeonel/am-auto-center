@@ -13,8 +13,7 @@ export default function Login() {
 
   useEffect(() => {
     try { setEmail(localStorage.getItem("am-ultimo-email") ?? ""); } catch {}
-    supabase.auth.getSession().then(({ data }) => { if (data.session) router.replace("/painel"); });
-  }, [router]);
+  }, []);
 
   async function entrar(e: React.FormEvent) {
     e.preventDefault();
@@ -22,7 +21,10 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
     if (error) { setErr("E-mail ou senha incorretos."); setBusy(false); return; }
     try { localStorage.setItem("am-ultimo-email", email.trim()); } catch {}
-    router.replace("/painel");
+    // O proxy já bloqueia /painel sem sessão; aceita só destinos internos do painel.
+    const next = new URLSearchParams(window.location.search).get("next") ?? "";
+    router.replace(/^\/painel(\/|$)/.test(next) ? next : "/painel");
+    router.refresh();
   }
 
   return (

@@ -14,25 +14,17 @@ const nav = [
 export function PainelShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const path = usePathname();
-  const [ok, setOk] = useState(false);
   const [novos, setNovos] = useState(0);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.replace("/login");
-      else setOk(true);
-    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => { if (!s) router.replace("/login"); });
     return () => sub.subscription.unsubscribe();
   }, [router]);
 
   useEffect(() => {
-    if (!ok) return;
     supabase.from("pedidos_site").select("id", { count: "exact", head: true }).eq("status", "novo")
       .then(({ count }) => setNovos(count ?? 0));
-  }, [ok, path]);
-
-  if (!ok) return <p className="p-8 text-mute">Carregando...</p>;
+  }, [path]);
 
   const active = (h: string) => (h === "/painel" ? path === "/painel" || path.startsWith("/painel/os") : path.startsWith(h));
   const badge = (h: string) =>
@@ -49,7 +41,7 @@ export function PainelShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <button type="button" className="rounded-md px-3 py-2 text-sm font-semibold text-white/75 hover:text-white"
-            onClick={async () => { await supabase.auth.signOut(); router.replace("/login"); }}>Sair</button>
+            onClick={async () => { await supabase.auth.signOut(); router.replace("/login"); router.refresh(); }}>Sair</button>
         </div>
       </header>
 

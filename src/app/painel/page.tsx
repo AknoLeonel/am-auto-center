@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { STATUS, statusLabel, dataBR } from "@/lib/painel";
+import { SkeletonList } from "@/components/ui/Skeleton";
 import { input, btnPrimary, card } from "@/components/ui";
 
 type Row = {
@@ -54,7 +55,7 @@ export default function Ordens() {
         ))}
       </div>
 
-      {loading ? <p className="mt-6 text-mute">Carregando...</p> : lista.length === 0 ? (
+      {loading ? <SkeletonList /> : lista.length === 0 ? (
         <p className="mt-6 text-mute">Nenhuma ordem encontrada. Toque em Nova OS para registrar o primeiro atendimento.</p>
       ) : (
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
