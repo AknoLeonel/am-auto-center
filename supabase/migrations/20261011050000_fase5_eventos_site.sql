@@ -64,3 +64,5 @@ begin
 end $$;
 revoke all on function public.resumo_site(date, date) from public, anon;
 grant execute on function public.resumo_site(date, date) to authenticated;
+
+-- FIM: 20261011050000_fase5_eventos_site.sql (se você vê esta linha no editor, colou o arquivo inteiro)

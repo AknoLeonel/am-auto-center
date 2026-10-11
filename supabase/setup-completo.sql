@@ -188,6 +188,8 @@ grant select, insert, update, delete on public.clientes, public.veiculos, public
   public.os_itens, public.lembretes, public.pedidos_site to authenticated;
 grant select, update on public.perfis to authenticated;
 
+-- FIM: 20261011000000_base_rls_papeis.sql (se você vê esta linha no editor, colou o arquivo inteiro)
+
 -- ===== 20261011010000_fase1_os_transacional_fotos.sql =====
 -- Fase 1: busca/paginação no servidor, criação de OS transacional e fotos da OS.
 
@@ -301,6 +303,8 @@ create policy "equipe envia fotos" on storage.objects for insert to authenticate
   with check (bucket_id = 'os-fotos' and public.papel_atual() is not null);
 create policy "equipe apaga fotos" on storage.objects for delete to authenticated
   using (bucket_id = 'os-fotos' and public.papel_atual() is not null);
+
+-- FIM: 20261011010000_fase1_os_transacional_fotos.sql (se você vê esta linha no editor, colou o arquivo inteiro)
 
 -- ===== 20261011020000_fase2_operacao.sql =====
 -- Fase 2: orçamento digital com aprovação por link, estoque, checklist, agenda, mecânico e garantia.
@@ -524,6 +528,8 @@ end $$;
 revoke all on function public.ajustar_estoque(uuid, numeric) from public, anon;
 grant execute on function public.ajustar_estoque(uuid, numeric) to authenticated;
 
+-- FIM: 20261011020000_fase2_operacao.sql (se você vê esta linha no editor, colou o arquivo inteiro)
+
 -- ===== 20261011030000_fase3_dados.sql =====
 -- Fase 3: auditoria, histórico de status, pagamentos, visão financeira e dashboard do dono.
 
@@ -742,6 +748,8 @@ grant select on public.auditoria, public.os_status_hist, public.os_etapas, publi
 revoke all on public.pagamentos from authenticated;
 grant select, insert, delete on public.pagamentos to authenticated;
 
+-- FIM: 20261011030000_fase3_dados.sql (se você vê esta linha no editor, colou o arquivo inteiro)
+
 -- ===== 20261011040000_fase4_pwa_tempo_real.sql =====
 -- Fase 4: fila offline idempotente, push, acompanhamento público e Realtime.
 
@@ -853,6 +861,8 @@ do $$ declare t text; begin
   end if;
 end $$;
 
+-- FIM: 20261011040000_fase4_pwa_tempo_real.sql (se você vê esta linha no editor, colou o arquivo inteiro)
+
 -- ===== 20261011050000_fase5_eventos_site.sql =====
 -- Fase 5: conversões do site público, sem cookies e sem dados pessoais.
 create table if not exists public.eventos_site (
@@ -921,6 +931,8 @@ end $$;
 revoke all on function public.resumo_site(date, date) from public, anon;
 grant execute on function public.resumo_site(date, date) to authenticated;
 
+-- FIM: 20261011050000_fase5_eventos_site.sql (se você vê esta linha no editor, colou o arquivo inteiro)
+
 -- ===== 20261011060000_seguranca_novos_usuarios.sql =====
 -- Segurança: usuários novos entram INATIVOS até o dono liberar.
 -- Antes, qualquer conta criada no Supabase Auth (inclusive por cadastro público, se ligado)
@@ -929,3 +941,5 @@ grant execute on function public.resumo_site(date, date) to authenticated;
 alter table public.perfis alter column ativo set default false;
 
 -- Quem já era ativo continua ativo. Só os cadastros futuros mudam.
+
+-- FIM: 20261011060000_seguranca_novos_usuarios.sql (se você vê esta linha no editor, colou o arquivo inteiro)

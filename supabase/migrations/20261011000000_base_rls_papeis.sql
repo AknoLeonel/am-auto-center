@@ -181,3 +181,5 @@ grant insert on public.pedidos_site to anon;
 grant select, insert, update, delete on public.clientes, public.veiculos, public.ordens_servico,
   public.os_itens, public.lembretes, public.pedidos_site to authenticated;
 grant select, update on public.perfis to authenticated;
+
+-- FIM: 20261011000000_base_rls_papeis.sql (se você vê esta linha no editor, colou o arquivo inteiro)

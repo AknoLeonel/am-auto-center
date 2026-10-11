@@ -214,3 +214,5 @@ revoke all on public.auditoria, public.os_status_hist, public.os_etapas, public.
 grant select on public.auditoria, public.os_status_hist, public.os_etapas, public.os_financeiro to authenticated;
 revoke all on public.pagamentos from authenticated;
 grant select, insert, delete on public.pagamentos to authenticated;
+
+-- FIM: 20261011030000_fase3_dados.sql (se você vê esta linha no editor, colou o arquivo inteiro)

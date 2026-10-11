@@ -34,6 +34,7 @@ const AUSENTE = new Set(["PGRST202", "PGRST205", "PGRST204", "42P01", "42883", "
 // "Ausente" = o objeto não existe. Qualquer outro erro (permissão, regra de negócio) prova que ele existe.
 export function classificar(e: Erro): "ok" | "ausente" | "sem-conexao" {
   if (!e) return "ok";
+  if (!e.code && !e.message) return "ausente"; // erro vazio (ex.: resposta sem corpo): não dá para afirmar que existe
   if (e.code && AUSENTE.has(e.code)) return "ausente";
   if (/could not find|does not exist|schema cache/i.test(e.message ?? "")) return "ausente";
   if (!e.code && /fetch|network|econn|enotfound|timeout/i.test(e.message ?? "")) return "sem-conexao";
@@ -46,13 +47,18 @@ export async function diagnosticar(supabase: SupabaseClient, env: Record<string,
   const itens: Item[] = [];
 
   const tabelas = await Promise.all(TABELAS.map(async ([t, m]) => {
-    const { error } = await supabase.from(t).select("*", { head: true }).limit(1);
+    // GET (não HEAD): num HEAD o PostgREST responde 404 sem corpo e o supabase-js o trata como sucesso.
+    const { error } = await supabase.from(t).select("*").limit(0);
     return { t, m, c: classificar(error) };
   }));
-  for (const { t, m, c } of tabelas) itens.push({ grupo: "Tabelas e visões", nome: t, ok: c === "ok", detalhe: c === "ok" ? undefined : ajuda(c), migration: m });
+  for (const { t, m, c } of tabelas) {
+    // O bucket de fotos é criado na mesma atualização da tabela os_fotos (não dá para checar o bucket sem a chave de serviço).
+    const extra = t === "os_fotos" && c === "ok" ? "Inclui o armazenamento de fotos (criado pela mesma atualização)." : undefined;
+    itens.push({ grupo: "Tabelas e visões", nome: t, ok: c === "ok", detalhe: c === "ok" ? extra : ajuda(c), migration: m });
+  }
 
   const colunas = await Promise.all(COLUNAS.map(async ([t, cols, m]) => {
-    const { error } = await supabase.from(t).select(cols, { head: true }).limit(1);
+    const { error } = await supabase.from(t).select(cols).limit(0);
     return { t, cols, m, c: classificar(error) };
   }));
   for (const { t, cols, m, c } of colunas) itens.push({ grupo: "Colunas novas", nome: `${t}.${cols.replaceAll(",", ", ")}`, ok: c === "ok", detalhe: c === "ok" ? undefined : ajuda(c), migration: m });
@@ -62,10 +68,6 @@ export async function diagnosticar(supabase: SupabaseClient, env: Record<string,
     return { f, m, c: classificar(error) };
   }));
   for (const { f, m, c } of funcoes) itens.push({ grupo: "Funções do banco", nome: f, ok: c === "ok", detalhe: c === "ok" ? undefined : ajuda(c), migration: m });
-
-  const { error: eb } = await supabase.storage.from("os-fotos").list("", { limit: 1 });
-  const cb = /not found/i.test(eb?.message ?? "") ? "ausente" : classificar(eb as Erro);
-  itens.push({ grupo: "Armazenamento de fotos", nome: "bucket os-fotos", ok: cb === "ok", detalhe: cb === "ok" ? undefined : ajuda(cb), migration: M1 });
 
   const { data: papel, error: ep } = await supabase.rpc("papel_atual");
   itens.push({

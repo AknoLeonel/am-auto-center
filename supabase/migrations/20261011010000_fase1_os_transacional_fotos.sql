@@ -110,3 +110,5 @@ create policy "equipe envia fotos" on storage.objects for insert to authenticate
   with check (bucket_id = 'os-fotos' and public.papel_atual() is not null);
 create policy "equipe apaga fotos" on storage.objects for delete to authenticated
   using (bucket_id = 'os-fotos' and public.papel_atual() is not null);
+
+-- FIM: 20261011010000_fase1_os_transacional_fotos.sql (se você vê esta linha no editor, colou o arquivo inteiro)
