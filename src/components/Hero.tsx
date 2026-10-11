@@ -18,7 +18,7 @@ export function Hero() {
             no WhatsApp e receba o orçamento antes de sair de casa.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <a href={wa(defaultMsg)} target="_blank" rel="noopener"
+            <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="hero"
                className="inline-flex min-h-13 items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 text-lg font-bold hover:brightness-110">
               <WhatsAppIcon /> Pedir orçamento grátis
             </a>

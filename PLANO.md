@@ -8,6 +8,6 @@ App mobile-first (PWA) para a oficina, com site público otimizado para SEO.
 | 1 | Núcleo rápido: Server Components/Actions, busca paginada no servidor, criação de OS transacional, fotos, Kanban | Concluída |
 | 2 | Operação: orçamento digital com aprovação por link, checklist, estoque, agenda, garantia, PDF | Concluída |
 | 3 | Dados: auditoria, histórico de status, dashboard financeiro, relatórios e exportação | Concluída |
-| 4 | PWA completo: offline com fila, Realtime, push, acompanhamento pelo cliente | Pronta, aguardando PR |
-| 5 | SEO: páginas por serviço/cidade, schema, Core Web Vitals, Google Business | Pendente |
+| 4 | PWA completo: offline com fila, Realtime, push, acompanhamento pelo cliente | Concluída |
+| 5 | SEO: páginas por serviço/cidade, schema, Core Web Vitals, Google Business | Pronta, aguardando PR |
 | 6 | Qualidade: testes unitários e e2e, Lighthouse CI, Sentry, backups | Contínuo |

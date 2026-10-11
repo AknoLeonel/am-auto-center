@@ -8,7 +8,7 @@ import { STATUS, statusLabel, TZ } from "@/lib/painel";
 import { AutoRefresh } from "@/components/AutoRefresh";
 
 export const metadata: Metadata = {
-  title: "Acompanhe seu carro | AM Auto Center",
+  title: "Acompanhe seu carro",
   robots: { index: false, follow: false },
 };
 

@@ -7,7 +7,7 @@ import { brl, dataBR } from "@/lib/painel";
 import { RespostaOrcamento } from "@/components/RespostaOrcamento";
 
 export const metadata: Metadata = {
-  title: "Seu orçamento | AM Auto Center",
+  title: "Seu orçamento",
   robots: { index: false, follow: false },
 };
 

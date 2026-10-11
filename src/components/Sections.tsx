@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { services, site, wa, defaultMsg } from "@/lib/site";
+import { servicoPorId, servicosDetalhe } from "@/lib/servicos";
 import { WhatsAppIcon } from "./WhatsAppIcon";
  
 export function Services() {
@@ -6,16 +8,24 @@ export function Services() {
     <section id="servicos" className="px-4 py-14 lg:py-20">
       <div className="mx-auto max-w-6xl">
         <h2 className="font-display text-4xl font-bold sm:text-5xl">O que fazemos pelo seu carro</h2>
-        <p className="mt-2 max-w-xl text-mute">Seis serviços para manter você na estrada com segurança.</p>
+        <p className="mt-2 max-w-xl text-mute">
+          Seis serviços para manter você na estrada com segurança. <Link href="/servicos" className="font-semibold text-brand underline">Ver todos os serviços</Link>.
+        </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
             <article key={s.id} className="flex flex-col rounded-md border border-line border-l-[6px] border-l-signal bg-white p-5">
               <h3 className="font-display text-3xl font-bold leading-none">{s.title}</h3>
               <p className="mt-2 text-[15.5px] text-mute">{s.text}</p>
-              <a href={wa(s.msg)} target="_blank" rel="noopener"
-                 className="mt-auto pt-4 font-bold text-wa hover:underline">
-                Pedir orçamento
-              </a>
+              <div className="mt-auto flex flex-wrap gap-x-5 gap-y-1 pt-4 font-bold">
+                <a href={wa(s.msg)} target="_blank" rel="noopener" data-origem={`servico-card:${s.id}`} className="text-wa hover:underline">
+                  Pedir orçamento
+                </a>
+                {servicoPorId(s.id) && (
+                  <Link href={`/servicos/${servicoPorId(s.id)!.slug}`} className="text-brand hover:underline">
+                    Saiba mais<span className="sr-only"> sobre {s.title}</span>
+                  </Link>
+                )}
+              </div>
             </article>
           ))}
         </div>
@@ -84,7 +94,7 @@ export function Location() {
             <div><dt className="font-bold">WhatsApp</dt><dd className="text-mute">{site.phoneDisplay}</dd></div>
           </dl>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <a href={wa(defaultMsg)} target="_blank" rel="noopener"
+            <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="local"
                className="inline-flex min-h-13 items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 font-bold text-white hover:brightness-110">
               <WhatsAppIcon /> Chamar no WhatsApp
             </a>
@@ -110,7 +120,7 @@ export function FinalCta() {
     <section className="bg-brand px-4 py-14 text-center text-white">
       <h2 className="font-display text-4xl font-extrabold sm:text-6xl">Não deixe o problema crescer.</h2>
       <p className="mx-auto mt-3 max-w-xl text-lg">Quanto antes você diagnostica, menor o custo do reparo. Mande uma mensagem agora.</p>
-      <a href={wa(defaultMsg)} target="_blank" rel="noopener"
+      <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="cta-final"
          className="mt-6 inline-flex min-h-13 items-center justify-center gap-2 rounded-lg bg-wa px-7 py-3.5 text-lg font-bold text-white hover:brightness-110">
         <WhatsAppIcon /> Falar com a AM Auto Center
       </a>
@@ -120,21 +130,25 @@ export function FinalCta() {
  
 export function Footer() {
   return (
-    <footer className="bg-asphalt px-4 pb-24 pt-8 text-sm text-white/60">
-      <div className="mx-auto max-w-6xl">
-        {site.name} · {site.street}, {site.city} - {site.state} ·{" "}
-        <a className="text-white underline" href={site.instagram} target="_blank" rel="noopener">Instagram</a>
+    <footer className="bg-asphalt px-4 pb-24 pt-10 text-sm text-white/75">
+      <div className="mx-auto grid max-w-6xl gap-8 sm:grid-cols-[1.2fr_1fr]">
+        <div>
+          <p className="font-display text-2xl font-extrabold text-white">AM <span className="text-signal">AUTO CENTER</span></p>
+          <p className="mt-2">{site.street}<br />{site.city} - {site.state}, {site.zip}</p>
+          <p className="mt-2">
+            WhatsApp {site.phoneDisplay} ·{" "}
+            <a className="text-white underline" href={site.instagram} target="_blank" rel="noopener">Instagram</a>
+          </p>
+        </div>
+        <nav aria-label="Serviços">
+          <p className="font-bold text-white">Serviços</p>
+          <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+            {servicosDetalhe.map((s) => (
+              <li key={s.slug}><Link href={`/servicos/${s.slug}`} className="hover:text-white hover:underline">{s.nome}</Link></li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </footer>
-  );
-}
- 
-export function WhatsAppFloat() {
-  return (
-    <a href={wa(defaultMsg)} target="_blank" rel="noopener" aria-label="Chamar no WhatsApp"
-       style={{ bottom: "calc(1rem + env(safe-area-inset-bottom))" }}
-       className="fixed right-4 z-40 inline-flex items-center gap-2 rounded-full bg-wa px-5 py-3.5 font-bold text-white shadow-xl hover:brightness-110">
-      <WhatsAppIcon className="h-6 w-6" /> WhatsApp
-    </a>
   );
 }

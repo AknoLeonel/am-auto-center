@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { RegistrarSW } from "@/components/RegistrarSW";
 
 export const metadata: Metadata = {
-  title: "Painel | AM Auto Center",
+  title: "Painel",
   robots: { index: false, follow: false },
   appleWebApp: { capable: true, title: "AM Painel", statusBarStyle: "black-translucent" },
 };

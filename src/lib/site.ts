@@ -10,6 +10,8 @@ export const site = {
   instagram: "https://www.instagram.com/centeramauto/",
   maps: "https://maps.google.com/maps?ftid=0x9334b8bf912a8d29:0x14dd12bfb4d114c2&gl=br",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /** Data da última revisão do conteúdo público (usada no sitemap; atualize quando mudar os textos). */
+  conteudoAtualizadoEm: "2026-10-11",
 };
  
 export const wa = (text: string) =>
