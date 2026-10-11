@@ -6,7 +6,7 @@ import { PrintButton } from "@/components/PrintButton";
 
 type Item = { id: string; tipo: string; descricao: string; qtd: number; valor_unit: number };
 type OS = {
-  numero: number; defeito: string | null; km: number | null; criado_em: string;
+  numero: number; defeito: string | null; km: number | null; criado_em: string; garantia_dias: number;
   clientes: { nome: string; telefone: string | null };
   veiculos: { placa: string; modelo: string | null; ano: number | null };
 };
@@ -16,7 +16,7 @@ export default async function Imprimir({ params }: { params: Promise<{ id: strin
   const supabase = await createClient();
   const [o, it] = await Promise.all([
     supabase.from("ordens_servico")
-      .select("numero,defeito,km,criado_em,clientes(nome,telefone),veiculos(placa,modelo,ano)").eq("id", id).maybeSingle(),
+      .select("numero,defeito,km,criado_em,garantia_dias,clientes(nome,telefone),veiculos(placa,modelo,ano)").eq("id", id).maybeSingle(),
     supabase.from("os_itens").select("id,tipo,descricao,qtd,valor_unit").eq("os_id", id).order("id"),
   ]);
   if (!o.data) notFound();
@@ -82,6 +82,10 @@ export default async function Imprimir({ params }: { params: Promise<{ id: strin
             <tr><td colSpan={3} className="pt-3 text-right font-bold">Total</td><td className="pt-3 text-right font-display text-2xl font-bold">{brl(total)}</td></tr>
           </tfoot>
         </table>
+
+        {os.garantia_dias > 0 && (
+          <p className="mt-6 text-sm"><strong>Garantia do serviço:</strong> {os.garantia_dias} dias, contados a partir da entrega do veículo.</p>
+        )}
 
         <div className="mt-16 grid grid-cols-2 gap-8 text-center text-sm">
           <div className="border-t border-black pt-1">Assinatura do cliente</div>
