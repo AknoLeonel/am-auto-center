@@ -3,6 +3,35 @@
 Site público e painel de gestão (ordens de serviço, pedidos do site e retornos) da AM Auto Center.
 Next.js 16 · React 19 · Tailwind 4 · Supabase. Veja o roadmap em [PLANO.md](PLANO.md).
 
+## Colocando no ar (passo a passo)
+
+Nenhuma alteração de código é necessária. O que falta é **configurar o Supabase e a Vercel**:
+
+1. **Crie o seu usuário** no Supabase: *Authentication > Users > Add user* (e-mail e senha). Ele será o **dono**.
+2. **Instale o banco**: *SQL Editor > New query*, cole todo o conteúdo de [`supabase/setup-completo.sql`](supabase/setup-completo.sql) e clique em **Run**.
+   Pode rodar de novo quando houver novas versões; nada é apagado. (Se o seu usuário foi criado *depois* de rodar, veja o passo 4.)
+3. **Variáveis na Vercel** (*Project > Settings > Environment Variables*, depois faça um novo deploy):
+   | Variável | Obrigatória | Onde achar |
+   |---|---|---|
+   | `NEXT_PUBLIC_SUPABASE_URL` | sim | Supabase > Project Settings > API > Project URL |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | sim | Supabase > API Keys > *publishable* (ou `anon`) |
+   | `NEXT_PUBLIC_SITE_URL` | sim | o domínio do site, ex.: `https://seudominio.com.br` |
+   | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | só para notificações | `npx web-push generate-vapid-keys` |
+   | `SUPABASE_SERVICE_ROLE_KEY` | só para notificações e resumo das 8h | Supabase > API Keys > *secret* (**nunca** compartilhe) |
+   | `CRON_SECRET` | só para o resumo das 8h | qualquer texto longo e aleatório |
+4. **Se o seu usuário não virou dono** (foi criado depois do passo 2), rode no SQL Editor, trocando o e-mail:
+   ```sql
+   update public.perfis set papel = 'dono', ativo = true
+   where user_id = (select id from auth.users where email = 'seu@email.com');
+   ```
+5. **Desligue o cadastro público** (segurança extra): Supabase > Authentication > Sign In / Providers > Email > desative *Allow new users to sign up*.
+   Mesmo ligado, contas novas entram **bloqueadas** até o dono liberar em *Mais > Equipe*.
+6. **Confira tudo** abrindo `/painel/diagnostico` (ou *Mais > Diagnóstico do sistema*): ele lista o que ainda falta no banco e nas variáveis.
+
+**Deu a mensagem "Não foi possível abrir esta tela" (ou o erro React #441)?** Em produção o Next esconde a mensagem real do servidor.
+Na grande maioria das vezes é o passo 2 (banco sem as atualizações) ou o passo 3. Abra o diagnóstico; se ele estiver tudo certo, procure o
+*código do erro* mostrado na tela nos logs da Vercel (*Deployments > Logs*).
+
 ## Rodando localmente
 
 ```bash
@@ -19,7 +48,7 @@ As migrations ficam em `supabase/migrations` e são idempotentes. Aplique com a 
 (`supabase db push`) ou cole o SQL no SQL Editor, em ordem.
 
 **Papéis** (tabela `perfis`): `dono`, `atendente` e `mecanico`. Contas já existentes viram `dono`;
-novas contas entram como `mecanico`. Para promover alguém:
+novas contas entram **bloqueadas** (como `mecanico`, inativas) até o dono liberar em *Mais > Equipe*. Para promover alguém por SQL:
 
 ```sql
 update public.perfis set papel = 'atendente' where user_id = '<uuid>';
