@@ -63,3 +63,20 @@ item, para o cálculo de margem da Fase 3.
   peça avulsa e mão de obra entram com custo zero.
 - **Relatórios**: CSV (separador `;`, UTF-8 com BOM, vírgula decimal) de OS, pagamentos e estoque.
 - Datas e períodos usam o horário da Bahia (UTC-3).
+
+## App offline, tempo real e notificações (Fase 4)
+
+- **Offline**: o service worker guarda os arquivos do app e as últimas páginas do painel vistas; sem sinal, abre a última
+  versão (ou a página "Sem conexão"). As páginas guardadas são apagadas ao sair da conta. Páginas com link-segredo
+  (`/o`, `/acompanhar`) e a API nunca são guardadas.
+- **Fila de envio**: mudar a situação, anotar observações, lançar item e tirar foto funcionam sem internet. A alteração é gravada
+  no aparelho (IndexedDB) e sobe sozinha quando o sinal volta, em ordem. Cada operação tem um id e o banco ignora reenvios
+  (`aplicar_op`), então nada duplica. Erros de regra (ex.: estoque insuficiente) aparecem na barra do topo para descartar.
+  A data de uma mudança de situação feita offline é a do envio, não a do toque.
+- **Tempo real**: o painel se atualiza sozinho quando outra pessoa mexe (Supabase Realtime, respeitando o RLS). Se a conexão
+  cair, volta a atualizar a cada 30 s.
+- **Acompanhamento do cliente**: na OS, "Enviar link de acompanhamento" manda `/acompanhar/<token>` (sem valores, só o
+  primeiro nome). O link expira 90 dias após a entrega.
+- **Notificações push** (opcional): pedido novo do site, orçamento aprovado/recusado e resumo das 8h (Vercel Cron).
+  Configure as variáveis do `.env.example` (`npx web-push generate-vapid-keys`) e ative em Mais > Notificações, em cada aparelho.
+  No iPhone é preciso instalar o app na Tela de Início (iOS 16.4+). `SUPABASE_SERVICE_ROLE_KEY` é só do servidor.
