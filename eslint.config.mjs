@@ -5,6 +5,9 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Dívida conhecida: telas antigas do painel buscam dados em useEffect.
+  // A Fase 1 migra para Server Components; depois disso esta regra volta a "error".
+  { rules: { "react-hooks/set-state-in-effect": "warn" } },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
