@@ -9,6 +9,8 @@ import { Lembretes } from "@/components/Lembretes";
 import { OrcamentoOS } from "@/components/OrcamentoOS";
 import { ChecklistOS } from "@/components/ChecklistOS";
 import { ResponsavelOS } from "@/components/ResponsavelOS";
+import { PagamentosOS } from "@/components/PagamentosOS";
+import { LinhaTempoOS } from "@/components/LinhaTempoOS";
 import { SubmitButton } from "@/components/ui/SubmitButton";
 import { input, btnPrimary, btnWa, btnGhost, card } from "@/components/ui";
 
@@ -137,6 +139,8 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <SubmitButton className={`${btnPrimary} mt-3`}>Salvar observações</SubmitButton>
       </form>
 
+      <PagamentosOS osId={os.id} total={total} />
+
       <OrcamentoOS osId={os.id} nome={os.clientes.nome} telefone={os.clientes.telefone} veiculo={veic} qtdItens={itens.length} />
 
       <ChecklistOS osId={os.id} />
@@ -151,6 +155,8 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
         <Link href={`/painel/os/${id}/imprimir`} className={`${btnGhost} sm:col-span-2`}>Imprimir ou salvar PDF</Link>
         {!os.clientes.telefone && <p className="text-sm text-mute sm:col-span-2">Sem telefone cadastrado: o WhatsApp abrirá sem destinatário.</p>}
       </section>
+
+      <LinhaTempoOS osId={os.id} />
 
       <section className={card}>
         <h2 className="font-display text-3xl font-bold">Histórico deste veículo</h2>

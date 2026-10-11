@@ -79,3 +79,10 @@ export const garantiaSchema = z.object({
   mecanicoId: z.string().transform((s) => s || null).pipe(z.uuid().nullable()),
   garantia: z.string().transform((s) => inteiro(s) ?? 0).pipe(z.number().int().min(0).max(3650)),
 });
+
+export const pagamentoSchema = z.object({
+  osId: z.uuid(),
+  valor: z.string().transform(num).pipe(z.number().positive("Informe o valor recebido.").max(10_000_000)),
+  forma: z.enum(["pix", "dinheiro", "debito", "credito", "transferencia"]),
+  obs: texto(200),
+});
