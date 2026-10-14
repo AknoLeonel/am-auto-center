@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { wa, defaultMsg } from "@/lib/site";
+import { wa, defaultMsg, tel, site } from "@/lib/site";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { PhoneIcon } from "./PhoneIcon";
 
 // Links absolutos (/#...) funcionam na home e nas páginas internas.
 const nav = [["Serviços", "/servicos"], ["Guincho", "/#guincho"], ["Peças", "/#pecas"], ["Contato", "/#local"]];
@@ -20,10 +21,16 @@ export function Header() {
             <Link key={h} href={h} className="text-white/80 hover:text-white">{t}</Link>
           ))}
         </nav>
-        <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="cabecalho"
-          className="inline-flex items-center gap-2 rounded-lg bg-wa px-4 py-2 text-sm font-bold hover:brightness-110">
-          <WhatsAppIcon className="h-4 w-4" /> <span className="hidden sm:inline">Chamar no</span> WhatsApp
-        </a>
+        <div className="flex items-center gap-2">
+          <a href={tel} data-origem="cabecalho" aria-label={`Ligar para a oficina, ${site.phoneDisplay}`}
+            className="inline-flex h-11 min-w-11 items-center justify-center gap-2 rounded-lg border-2 border-white/70 px-3 text-sm font-bold hover:bg-white/10">
+            <PhoneIcon className="h-5 w-5" /> <span className="hidden sm:inline">Ligar</span>
+          </a>
+          <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="cabecalho"
+            className="inline-flex h-11 items-center gap-2 rounded-lg bg-wa px-4 text-sm font-bold hover:brightness-110">
+            <WhatsAppIcon className="h-4 w-4" /> <span className="hidden sm:inline">Chamar no</span> WhatsApp
+          </a>
+        </div>
       </div>
     </header>
   );

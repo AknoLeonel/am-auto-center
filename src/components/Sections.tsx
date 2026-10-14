@@ -16,12 +16,12 @@ export function Services() {
             <article key={s.id} className="flex flex-col rounded-md border border-line border-l-[6px] border-l-signal bg-white p-5">
               <h3 className="font-display text-3xl font-bold leading-none">{s.title}</h3>
               <p className="mt-2 text-[15.5px] text-mute">{s.text}</p>
-              <div className="mt-auto flex flex-wrap gap-x-5 gap-y-1 pt-4 font-bold">
-                <a href={wa(s.msg)} target="_blank" rel="noopener" data-origem={`servico-card:${s.id}`} className="text-wa hover:underline">
+              <div className="-mx-3 mt-auto flex flex-wrap gap-x-2 pt-2 font-bold">
+                <a href={wa(s.msg)} target="_blank" rel="noopener" data-origem={`servico-card:${s.id}`} className="inline-flex min-h-11 items-center rounded-md px-3 text-wa hover:underline">
                   Pedir orçamento
                 </a>
                 {servicoPorId(s.id) && (
-                  <Link href={`/servicos/${servicoPorId(s.id)!.slug}`} className="text-brand hover:underline">
+                  <Link href={`/servicos/${servicoPorId(s.id)!.slug}`} className="inline-flex min-h-11 items-center rounded-md px-3 text-brand hover:underline">
                     Saiba mais<span className="sr-only"> sobre {s.title}</span>
                   </Link>
                 )}
