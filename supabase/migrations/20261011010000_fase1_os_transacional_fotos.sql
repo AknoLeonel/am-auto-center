@@ -16,6 +16,8 @@ create or replace function public.listar_os(
 ) language sql stable security invoker set search_path = '' as $$
   with b as (
     select nullif(trim(p_busca), '') as txt,
+           -- texto sem os curingas do LIKE: digitar só "%" ou "_" não pode casar com todo mundo
+           replace(replace(coalesce(trim(p_busca), ''), '%', ''), '_', '') as san,
            upper(regexp_replace(coalesce(p_busca, ''), '[^A-Za-z0-9]', '', 'g')) as placa
   )
   select o.id, o.numero, o.status, o.defeito, o.criado_em, v.placa, v.modelo, c.nome
@@ -32,8 +34,8 @@ create or replace function public.listar_os(
     and (b.txt is null
          or o.numero::text = b.txt
          or (b.placa <> '' and v.placa ilike '%' || b.placa || '%')
-         or c.nome ilike '%' || replace(replace(b.txt, '%', ''), '_', '') || '%'
-         or v.modelo ilike '%' || replace(replace(b.txt, '%', ''), '_', '') || '%')
+         or (b.san <> '' and c.nome ilike '%' || b.san || '%')
+         or (b.san <> '' and v.modelo ilike '%' || b.san || '%'))
   order by o.criado_em desc
   limit least(greatest(p_limite, 1), 100)
 $$;

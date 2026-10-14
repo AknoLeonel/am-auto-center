@@ -17,6 +17,7 @@ export async function GET(req: Request) {
   if (!admin) return Response.json({ ok: false, erro: "SUPABASE_SERVICE_ROLE_KEY ausente" }, { status: 500 });
 
   // Higiene: eventos de medição do site com mais de ~13 meses não servem mais (best effort).
+  await admin.from("erros_app").delete().lt("criado_em", new Date(Date.now() - 30 * 86400000).toISOString());
   await admin.from("eventos_site").delete().lt("criado_em", new Date(Date.now() - 400 * 86400000).toISOString());
 
   const hoje = hojeISO();

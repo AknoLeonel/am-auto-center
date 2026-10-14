@@ -1,7 +1,7 @@
 -- AM Auto Center: instalação completa do banco (gerado por "npm run db:setup", não edite à mão).
 -- Cole tudo no SQL Editor do Supabase e clique em Run. É seguro rodar de novo: nada é apagado.
 -- Antes de rodar: crie o seu usuário em Authentication > Users (ele vira o DONO).
--- Migrations incluídas: 20261011000000_base_rls_papeis.sql, 20261011010000_fase1_os_transacional_fotos.sql, 20261011020000_fase2_operacao.sql, 20261011030000_fase3_dados.sql, 20261011040000_fase4_pwa_tempo_real.sql, 20261011050000_fase5_eventos_site.sql, 20261011060000_seguranca_novos_usuarios.sql
+-- Migrations incluídas: 20261011000000_base_rls_papeis.sql, 20261011010000_fase1_os_transacional_fotos.sql, 20261011020000_fase2_operacao.sql, 20261011030000_fase3_dados.sql, 20261011040000_fase4_pwa_tempo_real.sql, 20261011050000_fase5_eventos_site.sql, 20261011060000_seguranca_novos_usuarios.sql, 20261011070000_fase6_erros_app.sql
 
 -- ===== 20261011000000_base_rls_papeis.sql =====
 -- Fase 0: esquema base (idempotente), papéis de acesso e RLS em todas as tabelas.
@@ -209,6 +209,8 @@ create or replace function public.listar_os(
 ) language sql stable security invoker set search_path = '' as $$
   with b as (
     select nullif(trim(p_busca), '') as txt,
+           -- texto sem os curingas do LIKE: digitar só "%" ou "_" não pode casar com todo mundo
+           replace(replace(coalesce(trim(p_busca), ''), '%', ''), '_', '') as san,
            upper(regexp_replace(coalesce(p_busca, ''), '[^A-Za-z0-9]', '', 'g')) as placa
   )
   select o.id, o.numero, o.status, o.defeito, o.criado_em, v.placa, v.modelo, c.nome
@@ -225,8 +227,8 @@ create or replace function public.listar_os(
     and (b.txt is null
          or o.numero::text = b.txt
          or (b.placa <> '' and v.placa ilike '%' || b.placa || '%')
-         or c.nome ilike '%' || replace(replace(b.txt, '%', ''), '_', '') || '%'
-         or v.modelo ilike '%' || replace(replace(b.txt, '%', ''), '_', '') || '%')
+         or (b.san <> '' and c.nome ilike '%' || b.san || '%')
+         or (b.san <> '' and v.modelo ilike '%' || b.san || '%'))
   order by o.criado_em desc
   limit least(greatest(p_limite, 1), 100)
 $$;
@@ -943,3 +945,30 @@ alter table public.perfis alter column ativo set default false;
 -- Quem já era ativo continua ativo. Só os cadastros futuros mudam.
 
 -- FIM: 20261011060000_seguranca_novos_usuarios.sql (se você vê esta linha no editor, colou o arquivo inteiro)
+
+-- ===== 20261011070000_fase6_erros_app.sql =====
+-- Fase 6: registro de erros reais do servidor (em produção o Next esconde a mensagem do navegador).
+-- Só o servidor (chave de serviço) grava; só o dono lê.
+create table if not exists public.erros_app (
+  id bigint generated always as identity primary key,
+  criado_em timestamptz not null default now(),
+  digest text,
+  mensagem text not null check (char_length(mensagem) <= 500),
+  rota text check (char_length(rota) <= 200),
+  tipo text check (char_length(tipo) <= 40),
+  metodo text check (char_length(metodo) <= 10),
+  caminho text check (char_length(caminho) <= 200)
+);
+create index if not exists erros_app_criado_idx on public.erros_app (criado_em desc);
+create index if not exists erros_app_digest_idx on public.erros_app (digest);
+
+alter table public.erros_app enable row level security;
+do $$ declare r record; begin
+  for r in select policyname from pg_policies where schemaname = 'public' and tablename = 'erros_app'
+  loop execute format('drop policy %I on public.erros_app', r.policyname); end loop;
+end $$;
+create policy "dono le erros" on public.erros_app for select to authenticated using (public.papel_atual() = 'dono');
+revoke all on public.erros_app from anon, authenticated;
+grant select on public.erros_app to authenticated;
+
+-- FIM: 20261011070000_fase6_erros_app.sql (se você vê esta linha no editor, colou o arquivo inteiro)

@@ -14,6 +14,9 @@ export const site = {
   conteudoAtualizadoEm: "2026-10-11",
 };
  
+/** Link para ligar (o mesmo número do WhatsApp). */
+export const tel = `tel:+${site.phone}`;
+
 export const wa = (text: string) =>
   `https://api.whatsapp.com/send?phone=${site.phone}&text=${encodeURIComponent(text)}`;
  
