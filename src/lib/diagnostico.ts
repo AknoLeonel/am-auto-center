@@ -8,12 +8,13 @@ const M2 = "20261011020000_fase2_operacao.sql";
 const M3 = "20261011030000_fase3_dados.sql";
 const M4 = "20261011040000_fase4_pwa_tempo_real.sql";
 const M5 = "20261011050000_fase5_eventos_site.sql";
+const M7 = "20261011070000_fase6_erros_app.sql";
 
 const TABELAS: [string, string][] = [
   ["clientes", M0], ["veiculos", M0], ["ordens_servico", M0], ["os_itens", M0], ["lembretes", M0], ["pedidos_site", M0], ["perfis", M0],
   ["os_fotos", M1], ["pecas_estoque", M2], ["os_checklist", M2], ["orcamentos", M2], ["agendamentos", M2],
   ["auditoria", M3], ["pagamentos", M3], ["os_status_hist", M3], ["os_etapas", M3], ["os_financeiro", M3],
-  ["fila_ops", M4], ["push_subs", M4], ["eventos_site", M5],
+  ["fila_ops", M4], ["push_subs", M4], ["eventos_site", M5], ["erros_app", M7],
 ];
 const COLUNAS: [string, string, string][] = [
   ["ordens_servico", "mecanico_id,garantia_dias,entregue_em", M2], ["os_itens", "peca_id,custo_unit", M2], ["ordens_servico", "token_publico", M4],

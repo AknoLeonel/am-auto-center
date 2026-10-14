@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { diagnosticar, migrationsFaltando, type Item } from "@/lib/diagnostico";
+import { papelAtual } from "@/lib/papel";
+import { TZ } from "@/lib/painel";
 import { card } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +15,12 @@ export default async function Diagnostico() {
   const faltaObrigatorio = itens.filter((i) => !i.ok && !i.opcional);
   const migs = migrationsFaltando(itens);
   const grupos = [...new Set(itens.map((i) => i.grupo))];
+
+  // Erros reais do servidor (a mensagem completa só aparece aqui e nos logs; o navegador mostra um código)
+  const dono = (await papelAtual(supabase)) === "dono";
+  const { data: erros } = dono
+    ? await supabase.from("erros_app").select("id,criado_em,digest,mensagem,rota,tipo,caminho").order("id", { ascending: false }).limit(15)
+    : { data: null };
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -57,6 +65,28 @@ export default async function Diagnostico() {
           </ul>
         </section>
       ))}
+
+      {dono && (
+        <section className={`${card} mt-4`}>
+          <h2 className="font-display text-2xl font-bold">Últimos erros do servidor</h2>
+          <p className="text-sm text-mute">Quando uma tela mostra &quot;Código do erro&quot;, procure o mesmo código aqui. Exige a variável SUPABASE_SERVICE_ROLE_KEY na Vercel.</p>
+          {!erros || erros.length === 0 ? (
+            <p className="mt-2 text-mute">Nenhum erro registrado.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-line">
+              {erros.map((e) => (
+                <li key={e.id} className="py-2">
+                  <p className="break-words font-semibold">{e.mensagem}</p>
+                  <p className="text-sm text-mute">
+                    {new Date(e.criado_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: TZ })}
+                    {e.caminho ? ` · ${e.caminho}` : ""}{e.tipo ? ` · ${e.tipo}` : ""}{e.digest ? ` · código ${e.digest}` : ""}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
     </div>
   );
 }

@@ -2,19 +2,72 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [master, main]
+
+env:
+  NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: chave-de-teste
+  NEXT_PUBLIC_SITE_URL: https://amautocenter.example
+
 jobs:
-  check:
+  qualidade:
+    name: Lint, tipos, testes unitários e build
     runs-on: ubuntu-latest
-    env:
-      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
-      - run: npm run db:setup && git diff --exit-code supabase/setup-completo.sql
+      - name: setup-completo.sql em dia com as migrations
+        run: npm run db:setup && git diff --exit-code supabase/setup-completo.sql
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm test
       - run: npm run build
+
+  banco:
+    name: Banco de dados (Postgres 16)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_PASSWORD: postgres }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - name: Migrations (duas vezes), RLS, regras e backup/restauração
+        run: npm run test:sql
+        env: { TEST_DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres" }
+
+  e2e:
+    name: Navegador (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: relatorio-playwright, path: "playwright-report/", retention-days: 7 }
+
+  lighthouse:
+    name: Lighthouse (desempenho, acessibilidade e SEO)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npx --yes @lhci/cli@0.15.x autorun
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: relatorios-lighthouse, path: ".lighthouseci/", retention-days: 7 }

@@ -47,6 +47,11 @@ Nenhuma alteração de código é necessária. O que falta é **configurar o Sup
 Na grande maioria das vezes é o passo 2 (banco sem as atualizações) ou o passo 3. Abra o diagnóstico; se ele estiver tudo certo, procure o
 *código do erro* mostrado na tela nos logs da Vercel (*Deployments > Logs*).
 
+## Documentação
+
+- [Manual da equipe](docs/MANUAL.md): uso diário no celular (atender, orçamento digital, offline, pagamentos).
+- [Operação](docs/OPERACAO.md): checklist de lançamento, erros e diagnóstico, **backup e restauração**, segurança, testes automáticos.
+
 ## Rodando localmente
 
 ```bash
@@ -147,3 +152,13 @@ item, para o cálculo de margem da Fase 3.
 3. Reivindique/atualize o perfil da empresa no Google (nome, endereço e telefone iguais aos do site) e coloque o link do site.
 4. Revise os textos de `src/lib/servicos.ts` e `src/lib/faq-home.ts` com a oficina: são informativos e genéricos, sem preço,
    prazo, marca ou garantia.
+
+## Testes e qualidade (Fase 6)
+
+```bash
+npm test                 # unitários (vitest): regras, validações, APIs, diagnóstico, push
+npm run test:sql         # banco de dados (precisa de um Postgres; veja docs/OPERACAO.md)
+npm run test:e2e         # navegador (Playwright): site, service worker, fila offline
+npm run db:backup -- "<connection string>"   # backup dos dados
+```
+Tudo isso (mais o Lighthouse) roda sozinho no GitHub a cada Pull Request. Erros reais do servidor aparecem em `/painel/diagnostico`.
