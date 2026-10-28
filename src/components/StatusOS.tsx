@@ -24,7 +24,8 @@ export function StatusOS({ osId, status }: { osId: string; status: string }) {
     if (novo === atual || ocupado) return;
     setOcupado(true);
     setOtimista(novo);
-    const r = await enviar("status", { os_id: osId, status: novo });
+    // "de" e "em": se outra pessoa mudar a OS antes de esta alteração subir, o servidor não a atropela.
+    const r = await enviar("status", { os_id: osId, status: novo, de: atual, em: new Date().toISOString() });
     if (r.resultado === "erro") setOtimista(null);
     setOcupado(false);
   }

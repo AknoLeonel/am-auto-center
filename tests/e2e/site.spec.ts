@@ -117,7 +117,7 @@ for (const [nome, vp] of [["celular 390", { width: 390, height: 844 }], ["celula
       const b = (await lig.boundingBox())!;
       expect(b.width).toBeGreaterThanOrEqual(44); expect(b.height).toBeGreaterThanOrEqual(44);
       await expect(lig).toHaveAttribute("aria-label", /Ligar para a oficina/);
-      await expect(lig).toHaveAttribute("href", "tel:+557799642878");
+      await expect(lig).toHaveAttribute("href", "tel:+5577999642878");
       const cab = (await page.locator("header .flex.items-center.gap-2").boundingBox())!;
       expect(cab.x + cab.width).toBeLessThanOrEqual(vp.width);
       expect((await page.locator("section a[href^='tel:'][data-origem='hero']").boundingBox())!.height).toBeGreaterThanOrEqual(48);

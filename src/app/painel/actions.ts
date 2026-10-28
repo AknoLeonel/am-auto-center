@@ -34,12 +34,9 @@ export async function mudarStatus(f: FormData) {
   const supabase = await equipe();
   const osId = z.uuid().parse(campo(f, "osId"));
   const status = statusSchema.parse(campo(f, "status"));
-  const { error } = await supabase.from("ordens_servico").update({
-    status,
-    concluido_em: status === "pronto" || status === "entregue" ? new Date().toISOString() : null,
-    entregue_em: status === "entregue" ? new Date().toISOString() : null,
-  }).eq("id", osId);
-  if (error) throw new Error("Não foi possível mudar a situação.");
+  // As datas de conclusão, entrega e cancelamento ficam por conta do banco (só mudam quando o status muda de fato).
+  const { error } = await supabase.from("ordens_servico").update({ status }).eq("id", osId).neq("status", status);
+  if (error) throw new Error(error.code === "23514" ? "Estoque insuficiente para reabrir a ordem." : "Não foi possível mudar a situação.");
   revalidatePath("/painel", "layout");
 }
 

@@ -32,6 +32,16 @@ describe("POST /api/ops (fila offline)", () => {
     expect((await chamar(op("obs", { os_id: OS, obs: "x".repeat(2001) }))).status).toBe(422);
     expect(rpc).not.toHaveBeenCalled();
   });
+  it("status leva a situação anterior e a hora do toque; conflito vira 409 com mensagem", async () => {
+    const em = new Date().toISOString();
+    expect((await chamar(op("status", { os_id: OS, status: "pronto", de: "em_servico", em }))).status).toBe(200);
+    expect(rpc.mock.calls[0][1].p_dados).toEqual({ os_id: OS, status: "pronto", de: "em_servico", em });
+    expect((await chamar(op("status", { os_id: OS, status: "pronto", em: "ontem" }))).status).toBe(422);
+    rpc.mockResolvedValueOnce({ data: "conflito", error: null });
+    const r = await chamar(op("status", { os_id: OS, status: "pronto", de: "aguardando", em }));
+    expect(r.status).toBe(409);
+    expect((await r.json()).erro).toMatch(/Outra pessoa/);
+  });
   it("foto só no caminho os/uuid.jpg", async () => {
     expect((await chamar(op("foto", { os_id: OS, caminho: `${OS}/${crypto.randomUUID()}.jpg` }))).status).toBe(200);
     expect((await chamar(op("foto", { os_id: OS, caminho: `${OS}/x.png` }))).status).toBe(422);

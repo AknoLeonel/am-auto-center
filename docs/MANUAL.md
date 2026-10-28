@@ -19,7 +19,7 @@ Quem vê o quê: o **mecânico** trabalha nas ordens de serviço; o **atendente*
 5. **Situação**: toque na situação atual do carro (Aguardando, Em diagnóstico, Aguardando aprovação, Em serviço, Pronto, Entregue). Quem olha o **Quadro** vê o carro andar de coluna em coluna.
 6. **Orçamento digital**: com os itens lançados, toque em *Gerar link de orçamento* e depois em *Enviar link no WhatsApp*. O cliente vê os itens no celular e **aprova com um toque**. A aprovação fica registrada (nome e data) e a ordem passa sozinha para *Em serviço*. Se mudar algum valor, gere um orçamento novo: o link antigo deixa de valer.
 7. **Acompanhamento**: *Enviar link de acompanhamento* manda ao cliente uma página que mostra em que etapa está o carro, sem valores.
-8. **Pagamento** (dono e atendente): na ordem, registre quanto o cliente pagou e como (Pix, dinheiro, cartão...). Pode ser em partes. O que falta aparece em *Mais > Contas a receber*, com botão para cobrar pelo WhatsApp.
+8. **Pagamento** (dono e atendente): na ordem, registre quanto o cliente pagou e como (Pix, dinheiro, cartão...). Pode ser em partes e com a data em que o cliente pagou (um Pix de sábado lançado na segunda cai no sábado). Se o valor passar do que falta, o sistema pede confirmação (adiantamento). O que falta aparece em *Mais > Contas a receber*, com botão para cobrar pelo WhatsApp.
 9. **Pronto e entrega**: marque *Pronto* e use *Avisar: carro pronto*. Ao marcar *Entregue*, começa a contar a **garantia**.
 10. **Lembrete de volta**: na ordem, agende o aviso de retorno (troca de óleo, revisão...). No dia, o cliente aparece em **Retornos** com a mensagem pronta.
 

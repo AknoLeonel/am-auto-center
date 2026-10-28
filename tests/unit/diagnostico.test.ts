@@ -23,7 +23,7 @@ describe("classificar erros do PostgREST/Postgres", () => {
 // Usa o cliente REAL do supabase-js: um cliente falso não pegou o bug em que o 404 sem corpo de um HEAD virava "sucesso".
 describe("banco antigo (só o esquema original) com o cliente real", () => {
   const existentes = new Set(["clientes", "veiculos", "ordens_servico", "os_itens", "lembretes", "pedidos_site"]);
-  const colunasNovas = new Set(["mecanico_id", "garantia_dias", "entregue_em", "peca_id", "custo_unit", "token_publico"]);
+  const colunasNovas = new Set(["mecanico_id", "garantia_dias", "entregue_em", "peca_id", "custo_unit", "token_publico", "cancelada_em", "estoque_baixado", "visitante"]);
   let srv: http.Server; let url = "";
 
   beforeAll(async () => {
@@ -46,14 +46,14 @@ describe("banco antigo (só o esquema original) com o cliente real", () => {
   });
   afterAll(() => { srv.close(); });
 
-  it("aponta o que falta: tabelas, colunas, funções e as 7 migrations", async () => {
+  it("aponta o que falta: tabelas, colunas, funções e as 8 migrations", async () => {
     const r = await diagnosticar(createClient(url, "chave", { auth: { persistSession: false } }), { ...env, NEXT_PUBLIC_SITE_URL: undefined });
     const tabelas = r.filter((i) => i.grupo === "Tabelas e visões");
     expect(tabelas.filter((i) => i.ok).map((i) => i.nome).sort()).toEqual([...existentes].sort());
     expect(tabelas.filter((i) => !i.ok)).toHaveLength(tabelas.length - existentes.size);
     expect(r.filter((i) => i.grupo === "Colunas novas").every((i) => !i.ok)).toBe(true);
     expect(r.filter((i) => i.grupo === "Funções do banco").every((i) => !i.ok)).toBe(true);
-    expect(migrationsFaltando(r)).toHaveLength(7); // as que criam objetos checáveis (a de segurança não cria nada)
+    expect(migrationsFaltando(r)).toHaveLength(8); // as que criam objetos checáveis (a de segurança não cria nada)
     expect(r.find((i) => i.nome.startsWith("NEXT_PUBLIC_SITE_URL"))?.ok).toBe(false);
     expect(r.find((i) => i.grupo === "Sua conta")?.ok).toBe(false);
   });

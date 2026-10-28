@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 const uuid = z.uuid();
 const dadosPorTipo = {
-  status: z.object({ os_id: uuid, status: statusSchema }),
+  status: z.object({ os_id: uuid, status: statusSchema, de: statusSchema.optional(), em: z.iso.datetime({ offset: true }).optional() }),
   obs: z.object({ os_id: uuid, obs: z.string().max(2000) }),
   item: z.object({
     os_id: uuid, tipo: z.enum(["servico", "peca"]), descricao: z.string().trim().min(1).max(200),
@@ -38,5 +38,6 @@ export async function POST(req: Request) {
     if (error.code === "22023") return erro(422, "Dados inválidos.");
     return erro(500, "Erro ao salvar. Tentaremos de novo.");
   }
+  if (resultado === "conflito") return erro(409, "Outra pessoa mudou a situação desta ordem antes. Confira e escolha de novo.");
   return Response.json({ ok: true, resultado });
 }

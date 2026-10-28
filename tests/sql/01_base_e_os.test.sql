@@ -63,10 +63,10 @@ begin
 
   -- ===== pedidos do site: o público só insere, e sempre como novo =====
   perform t.anon();
-  insert into pedidos_site(tipo, mensagem) values ('pecas', 'quero pastilha');
-  assert t.falha($q$insert into pedidos_site(tipo,mensagem,status) values ('pecas','x','concluido')$q$) = '42501', 'anon não escolhe o status';
-  assert t.falha($q$insert into pedidos_site(tipo,mensagem) values ('hack','x')$q$) = '23514', 'tipo inválido';
-  assert t.falha($q$insert into pedidos_site(tipo,mensagem) values ('pecas', repeat('x', 1801))$q$) = '23514', 'mensagem gigante';
+  assert enviar_pedido_site('pecas', null, null, null, 'quero pastilha', null) = 'ok', 'anon envia pedido pela função';
+  assert t.falha($q$insert into pedidos_site(tipo,mensagem) values ('pecas','x')$q$) = '42501', 'anon não grava direto (nem escolhe o status)';
+  assert t.falha($q$select enviar_pedido_site('hack',null,null,null,'x',null)$q$) = '23514', 'tipo inválido';
+  assert t.falha($q$select enviar_pedido_site('pecas',null,null,null,repeat('x', 1801),null)$q$) = '23514', 'mensagem gigante';
   assert t.falha('select count(*) from pedidos_site') = '42501', 'anon não lê pedidos';
   assert t.falha('select * from ordens_servico') = '42501' and t.falha('select * from clientes') = '42501', 'anon não lê dados internos';
 

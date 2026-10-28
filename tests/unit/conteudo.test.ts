@@ -43,7 +43,7 @@ describe("dados estruturados", () => {
     expect(n).not.toHaveProperty("aggregateRating");
     expect(n).not.toHaveProperty("openingHoursSpecification");
     expect(n).not.toHaveProperty("geo");
-    expect(n.telephone).toBe(`+${site.phone}`);
+    expect(n.telephone).toBe(`+${site.phoneTel}`);
   });
   it("serviço, FAQ e migalhas têm o formato do schema.org", () => {
     const s = servicosDetalhe[0];

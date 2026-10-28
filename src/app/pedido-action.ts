@@ -1,9 +1,11 @@
 "use server";
 import { after } from "next/server";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { enviarPush } from "@/lib/push";
+import { visitante } from "@/lib/visitante";
 
 const TIPO: Record<string, string> = { pecas: "Peças", guincho: "Guincho", orcamento: "Orçamento" };
 
@@ -20,11 +22,12 @@ export async function registrarPedidoServidor(dados: unknown) {
   const p = pedido.safeParse(dados);
   if (!p.success) return;
   const supabase = await createClient();
-  const { error } = await supabase.from("pedidos_site").insert({
-    tipo: p.data.tipo, nome: p.data.nome || null, telefone: p.data.telefone?.replace(/\D/g, "").slice(0, 20) || null,
-    veiculo: p.data.veiculo || null, mensagem: p.data.mensagem,
+  // A função do banco limita pedidos por telefone, por aparelho e por hora; acima do limite devolve "limite" e não grava.
+  const { data, error } = await supabase.rpc("enviar_pedido_site", {
+    p_tipo: p.data.tipo, p_nome: p.data.nome || null, p_telefone: p.data.telefone || null,
+    p_veiculo: p.data.veiculo || null, p_mensagem: p.data.mensagem, p_visitante: visitante(await headers()),
   });
-  if (error) return;
+  if (error || data !== "ok") return;
 
   after(async () => {
     // Anti-spam: se já chegaram vários pedidos há pouco, não enche o celular da equipe de notificações.

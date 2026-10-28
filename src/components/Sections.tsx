@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { services, site, wa, defaultMsg } from "@/lib/site";
 import { servicoPorId, servicosDetalhe } from "@/lib/servicos";
@@ -69,7 +70,12 @@ export function Trust() {
     <section className="px-4 py-14 lg:py-20">
       <div className="mx-auto max-w-6xl">
         <h2 className="font-display text-4xl font-bold sm:text-5xl">Oficina de confiança na sua cidade</h2>
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <figure className="mt-8">
+          <Image src="/equipe.webp" alt="Equipe da AM Auto Center, de uniforme azul, na loja de peças" width={866} height={486}
+            sizes="(min-width: 1152px) 1152px, 100vw" className="h-auto w-full rounded-md object-cover" />
+          <figcaption className="mt-2 text-sm text-mute">Nossa equipe na loja, na {site.street}.</figcaption>
+        </figure>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {items.map(([t, d]) => (
             <div key={t} className="rounded-md border border-line bg-white p-5">
               <h3 className="font-display text-2xl font-bold">{t}</h3>
@@ -91,7 +97,7 @@ export function Location() {
           <dl className="mt-5 space-y-4">
             <div><dt className="font-bold">Endereço</dt><dd className="text-mute">{site.street}<br />{site.city} - {site.state}, {site.zip}</dd></div>
             <div><dt className="font-bold">Horário</dt><dd className="text-mute">{site.hours}</dd></div>
-            <div><dt className="font-bold">WhatsApp</dt><dd className="text-mute">{site.phoneDisplay}</dd></div>
+            <div><dt className="font-bold">Telefone e WhatsApp</dt><dd className="text-mute">{site.phoneDisplay}</dd></div>
           </dl>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="local"

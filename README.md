@@ -17,7 +17,7 @@ Nenhuma alteração de código é necessária. O que falta é **configurar o Sup
      npm install
      npm run db:aplicar -- "postgresql://postgres.xxxx:SUASENHA@aws-0-regiao.pooler.supabase.com:5432/postgres"
      ```
-     Ele aplica as 7 migrations em ordem e mostra ✔ ou ✖ em cada uma. Pode rodar de novo quando houver versões novas; nada é apagado.
+     Ele aplica as migrations em ordem e mostra ✔ ou ✖ em cada uma. Pode rodar de novo quando houver versões novas; nada é apagado.
      **Nunca compartilhe essa senha** (nem comigo, nem em mensagens ou prints).
    - **Opção B, colando no SQL Editor:** cole o conteúdo de [`supabase/setup-completo.sql`](supabase/setup-completo.sql) e clique em **Run**.
      **Cuidado ao copiar:** na tela do GitHub, `Ctrl+A` copia só as ~100 linhas visíveis e o SQL fica cortado (erro

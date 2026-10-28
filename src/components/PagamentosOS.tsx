@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { brl, TZ } from "@/lib/painel";
+import { brl, hojeISO, TZ } from "@/lib/painel";
 import { papelAtual } from "@/lib/papel";
 import { estornarPagamento } from "@/app/painel/financeiro/actions";
 import { PagamentoForm } from "./PagamentoForm";
@@ -50,7 +50,7 @@ export async function PagamentosOS({ osId, total }: { osId: string; total: numbe
           ))}
         </ul>
       )}
-      <PagamentoForm key={lista.length} osId={osId} saldo={saldo} />
+      <PagamentoForm key={lista.length} osId={osId} saldo={saldo} hoje={hojeISO()} />
     </section>
   );
 }

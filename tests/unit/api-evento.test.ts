@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const insert = vi.fn(async () => ({ error: null }));
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ from: () => ({ insert }) }) }));
+const insert = vi.fn<(fn: string, args: Record<string, unknown>) => Promise<{ data: string; error: null }>>(async () => ({ data: "ok", error: null }));
+vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ rpc: insert }) }));
 const { POST } = await import("@/app/api/evento/route");
 
 const UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1";
@@ -19,7 +19,16 @@ describe("POST /api/evento (conversões do site)", () => {
   it("grava um evento válido, com campos vazios como nulo", async () => {
     const r = await enviar({ ...ok, fonte: "", meio: "bio", ref: "  " });
     expect(r.status).toBe(204);
-    expect(insert).toHaveBeenCalledWith({ evento: "whatsapp", origem: "hero", pagina: "/", fonte: null, meio: "bio", campanha: null, ref: null, dispositivo: "mobile" });
+    expect(insert).toHaveBeenCalledWith("registrar_evento", {
+      p_evento: "whatsapp", p_origem: "hero", p_pagina: "/", p_fonte: null, p_meio: "bio", p_campanha: null, p_ref: null,
+      p_dispositivo: "mobile", p_visitante: expect.stringMatching(/^[0-9a-f]{32}$/),
+    });
+  });
+  it("o resumo do aparelho muda com o IP e não guarda o IP", async () => {
+    await enviar(ok, { "x-forwarded-for": "1.2.3.4" }); await enviar(ok, { "x-forwarded-for": "5.6.7.8" });
+    const [a, b] = insert.mock.calls.map((c) => String(c[1].p_visitante));
+    expect(a).not.toBe(b);
+    expect(a).not.toContain("1.2.3.4");
   });
   it("página precisa começar com / e ter até 120 caracteres", async () => {
     await enviar({ ...ok, pagina: "http://evil.com" }); await enviar({ ...ok, pagina: "/" + "a".repeat(130) });

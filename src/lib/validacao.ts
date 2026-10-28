@@ -85,4 +85,6 @@ export const pagamentoSchema = z.object({
   valor: z.string().transform(num).pipe(z.number().positive("Informe o valor recebido.").max(10_000_000)),
   forma: z.enum(["pix", "dinheiro", "debito", "credito", "transferencia"]),
   obs: texto(200),
+  data: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida.").optional().or(z.literal("")),
+  confirmo: z.string().optional(),
 });
