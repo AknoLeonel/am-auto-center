@@ -6,18 +6,19 @@ begin
   select user_id into v_dono from perfis p join auth.users u on u.id = p.user_id where u.email = 'dono@x.com';
   v_aten := t.usuario('aten@x.com', 'atendente'); v_mec := t.usuario('mec@x.com', 'mecanico');
 
-  -- ===== eventos do site: o visitante só insere =====
+  -- ===== eventos do site: o visitante só registra, pela função com limite =====
   perform t.anon();
-  insert into eventos_site(evento, origem, pagina, fonte, dispositivo) values ('visita', null, '/', 'instagram', 'mobile');
-  insert into eventos_site(evento, origem, pagina, dispositivo) values ('visita', null, '/servicos/freios', 'mobile');
-  insert into eventos_site(evento, origem, pagina, fonte, dispositivo) values ('whatsapp', 'hero', '/', 'instagram', 'mobile');
-  insert into eventos_site(evento, origem, pagina, dispositivo) values ('whatsapp', 'servico:freios', '/servicos/freios', 'desktop');
-  insert into eventos_site(evento, origem, pagina, dispositivo) values ('mapa', 'local', '/', 'desktop');
-  insert into eventos_site(evento, origem, pagina, ref, dispositivo) values ('visita', null, '/', 'google.com', 'desktop');
+  perform registrar_evento('visita', null, '/', 'instagram', null, null, null, 'mobile', 'v1');
+  perform registrar_evento('visita', null, '/servicos/freios', null, null, null, null, 'mobile', 'v1');
+  perform registrar_evento('whatsapp', 'hero', '/', 'instagram', null, null, null, 'mobile', 'v1');
+  perform registrar_evento('whatsapp', 'servico:freios', '/servicos/freios', null, null, null, null, 'desktop', 'v2');
+  perform registrar_evento('mapa', 'local', '/', null, null, null, null, 'desktop', 'v2');
+  perform registrar_evento('visita', null, '/', null, null, null, 'google.com', 'desktop', null);
   assert t.falha('select count(*) from eventos_site') = '42501', 'o visitante não lê os eventos';
-  assert t.falha($q$insert into eventos_site(evento,pagina) values ('hack','/')$q$) = '23514', 'evento desconhecido';
-  assert t.falha($q$insert into eventos_site(evento,pagina) values ('visita','http://evil')$q$) = '23514', 'página precisa começar com /';
-  assert t.falha($q$insert into eventos_site(evento,origem,pagina) values ('visita',repeat('x',200),'/')$q$) = '23514', 'origem gigante';
+  assert t.falha($q$insert into eventos_site(evento,pagina) values ('visita','/')$q$) = '42501', 'o visitante não grava direto na tabela';
+  assert t.falha($q$select registrar_evento('hack',null,'/',null,null,null,null,null,null)$q$) = '23514', 'evento desconhecido';
+  assert t.falha($q$select registrar_evento('visita',null,'http://evil',null,null,null,null,null,null)$q$) = '23514', 'página precisa começar com /';
+  assert t.falha($q$select registrar_evento('visita',repeat('x',200),'/',null,null,null,null,null,null)$q$) = '23514', 'origem gigante';
   assert t.falha('select resumo_site(current_date - 7, current_date)') = '42501', 'o visitante não vê o resumo';
 
   perform t.login(v_mec);

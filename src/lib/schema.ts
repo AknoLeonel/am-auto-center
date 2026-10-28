@@ -13,7 +13,7 @@ export function negocio() {
     name: site.name,
     url: site.url,
     image: `${site.url}/opengraph-image`,
-    telephone: `+${site.phone}`,
+    telephone: `+${site.phoneTel}`,
     address: {
       "@type": "PostalAddress",
       streetAddress: site.street,

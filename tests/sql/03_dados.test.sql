@@ -29,8 +29,8 @@ begin
 
   -- ===== auditoria =====
   assert (select count(*) from auditoria where tabela = 'ordens_servico' and registro_id = v_os2::text and acao = 'UPDATE') = 2, 'update sem mudança real não gera registro';
-  assert (select antes from auditoria where tabela = 'ordens_servico' and acao = 'UPDATE' and depois ? 'status' and registro_id = v_os2::text order by id desc limit 1) = '{"status": "diagnostico"}'::jsonb, 'guarda só o campo que mudou (antes)';
-  assert (select depois from auditoria where tabela = 'ordens_servico' and acao = 'UPDATE' and depois ? 'status' and registro_id = v_os2::text order by id desc limit 1) = '{"status": "pronto"}'::jsonb, 'guarda só o campo que mudou (depois)';
+  assert (select antes from auditoria where tabela = 'ordens_servico' and acao = 'UPDATE' and depois ? 'status' and registro_id = v_os2::text order by id desc limit 1) = '{"status": "diagnostico", "concluido_em": null}'::jsonb, 'guarda só os campos que mudaram (antes)';
+  assert (select depois from auditoria where tabela = 'ordens_servico' and acao = 'UPDATE' and depois ? 'status' and registro_id = v_os2::text order by id desc limit 1) - 'concluido_em' = '{"status": "pronto"}'::jsonb, 'guarda só os campos que mudaram (depois)';
   assert exists (select 1 from auditoria where user_id = v_mec and tabela = 'ordens_servico'), 'registra quem fez';
   assert t.falha('delete from auditoria') = '42501' and t.falha($q$update auditoria set tabela = 'x'$q$) = '42501' and t.falha($q$insert into auditoria(tabela,registro_id,acao) values ('x','1','INSERT')$q$) = '42501', 'a auditoria é imutável pelo app';
   perform t.login(v_aten);

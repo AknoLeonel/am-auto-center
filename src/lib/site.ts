@@ -1,8 +1,11 @@
 export const site = {
   name: "AM Auto Center",
+  /** Número cadastrado no WhatsApp (sem o 9, como está no Instagram). */
   phone: "557799642878",
-  phoneDisplay: "(77) 9964-2878",
-  street: "BR-135, 16 - Vila Projeto",
+  /** Número para ligar: celular com o 9, como na placa da fachada. */
+  phoneTel: "5577999642878",
+  phoneDisplay: "(77) 99964-2878",
+  street: "BR-135, Km 26",
   city: "Formosa do Rio Preto",
   state: "BA",
   zip: "47990-000",
@@ -11,11 +14,11 @@ export const site = {
   maps: "https://maps.google.com/maps?ftid=0x9334b8bf912a8d29:0x14dd12bfb4d114c2&gl=br",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   /** Data da última revisão do conteúdo público (usada no sitemap; atualize quando mudar os textos). */
-  conteudoAtualizadoEm: "2026-10-11",
+  conteudoAtualizadoEm: "2026-10-28",
 };
  
-/** Link para ligar (o mesmo número do WhatsApp). */
-export const tel = `tel:+${site.phone}`;
+/** Link para ligar (celular com o 9; o WhatsApp aceita o número antigo). */
+export const tel = `tel:+${site.phoneTel}`;
 
 export const wa = (text: string) =>
   `https://api.whatsapp.com/send?phone=${site.phone}&text=${encodeURIComponent(text)}`;

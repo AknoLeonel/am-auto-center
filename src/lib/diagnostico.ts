@@ -9,6 +9,7 @@ const M3 = "20261011030000_fase3_dados.sql";
 const M4 = "20261011040000_fase4_pwa_tempo_real.sql";
 const M5 = "20261011050000_fase5_eventos_site.sql";
 const M7 = "20261011070000_fase6_erros_app.sql";
+const M8 = "20261028000000_correcoes_revisao.sql";
 
 const TABELAS: [string, string][] = [
   ["clientes", M0], ["veiculos", M0], ["ordens_servico", M0], ["os_itens", M0], ["lembretes", M0], ["pedidos_site", M0], ["perfis", M0],
@@ -18,6 +19,7 @@ const TABELAS: [string, string][] = [
 ];
 const COLUNAS: [string, string, string][] = [
   ["ordens_servico", "mecanico_id,garantia_dias,entregue_em", M2], ["os_itens", "peca_id,custo_unit", M2], ["ordens_servico", "token_publico", M4],
+  ["ordens_servico", "cancelada_em", M8], ["os_itens", "estoque_baixado", M8], ["pedidos_site", "visitante", M8],
 ];
 // Funções chamadas com argumentos que não gravam nada (falham antes ou devolvem vazio).
 const ZERO = "00000000-0000-0000-0000-000000000000";

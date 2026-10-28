@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { visitante } from "@/lib/visitante";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,12 @@ export async function POST(req: Request) {
     const p = corpo.safeParse(JSON.parse(await req.text()));
     if (!p.success) return new Response(null, { status: 204 });
     const supabase = await createClient();
-    await supabase.from("eventos_site").insert({ ...p.data, dispositivo: p.data.dispositivo ?? null });
+    // A função do banco limita eventos por aparelho e por hora (a chave pública não grava direto na tabela).
+    const d = p.data;
+    await supabase.rpc("registrar_evento", {
+      p_evento: d.evento, p_origem: d.origem, p_pagina: d.pagina, p_fonte: d.fonte, p_meio: d.meio,
+      p_campanha: d.campanha, p_ref: d.ref, p_dispositivo: d.dispositivo ?? null, p_visitante: visitante(req.headers),
+    });
   } catch {}
   return new Response(null, { status: 204 });
 }

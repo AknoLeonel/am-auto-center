@@ -12,8 +12,8 @@ const ROTULO: Record<string, [string, string]> = {
   substituido: ["Substituído", "bg-line"],
 };
 
-export async function OrcamentoOS({ osId, nome, telefone, veiculo, qtdItens }: {
-  osId: string; nome: string; telefone: string | null; veiculo: string; qtdItens: number;
+export async function OrcamentoOS({ osId, nome, telefone, veiculo, qtdItens, totalAtual }: {
+  osId: string; nome: string; telefone: string | null; veiculo: string; qtdItens: number; totalAtual: number;
 }) {
   const supabase = await createClient();
   const { data } = await supabase.from("orcamentos")
@@ -25,6 +25,8 @@ export async function OrcamentoOS({ osId, nome, telefone, veiculo, qtdItens }: {
     ? `Olá, ${nome.split(" ")[0]}! Preparei o orçamento do seu ${veiculo} na AM Auto Center (${brl(Number(q.total))}). ` +
       `Veja os detalhes e aprove por aqui, sem precisar ligar: ${link}`
     : "";
+  // Itens mudaram depois do orçamento: o cliente aprovou (ou vai ver) outro valor.
+  const mudou = !!q && (q.status === "aprovado" || q.status === "pendente") && Math.abs(Number(q.total) - totalAtual) > 0.005;
 
   return (
     <section className={card}>
@@ -39,6 +41,18 @@ export async function OrcamentoOS({ osId, nome, telefone, veiculo, qtdItens }: {
           </div>
           {q.aceite_nome && q.respondido_em && <p className="mt-1 text-sm">Por {q.aceite_nome} em {dataBR(q.respondido_em)}.</p>}
           {q.status === "pendente" && link && <p className="mt-2 break-all text-sm text-mute">{link}</p>}
+        </div>
+      )}
+
+      {mudou && q && (
+        <div role="alert" className="mt-3 rounded-md border-l-[6px] border-l-amber-500 bg-amber-50 p-3 text-sm text-amber-900">
+          <p className="font-bold">
+            {q.status === "aprovado" ? "O total mudou depois da aprovação" : "Os itens mudaram depois que o link foi gerado"}
+          </p>
+          <p>
+            {q.status === "aprovado" ? "O cliente aprovou" : "O link mostra"} {brl(Number(q.total))}; agora a ordem soma {brl(totalAtual)}.
+            {" "}Gere um novo orçamento e envie para o cliente aprovar antes de cobrar a diferença.
+          </p>
         </div>
       )}
 

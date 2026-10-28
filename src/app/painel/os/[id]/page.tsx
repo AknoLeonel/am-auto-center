@@ -136,7 +136,7 @@ export default async function DetalheOS({ params }: { params: Promise<{ id: stri
 
       <PagamentosOS osId={os.id} total={total} />
 
-      <OrcamentoOS osId={os.id} nome={os.clientes.nome} telefone={os.clientes.telefone} veiculo={veic} qtdItens={itens.length} />
+      <OrcamentoOS osId={os.id} nome={os.clientes.nome} telefone={os.clientes.telefone} veiculo={veic} qtdItens={itens.length} totalAtual={total} />
 
       <ChecklistOS osId={os.id} />
 
