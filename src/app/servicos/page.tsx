@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer, FinalCta } from "@/components/Sections";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { BarraAcoes } from "@/components/BarraAcoes";
 import { JsonLd } from "@/components/JsonLd";
 import { site } from "@/lib/site";
 import { servicosDetalhe, CIDADE } from "@/lib/servicos";
@@ -53,6 +54,7 @@ export default function Servicos() {
       </main>
       <Footer />
       <WhatsAppFloat />
+      <BarraAcoes />
     </>
   );
 }

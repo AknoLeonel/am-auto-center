@@ -4,7 +4,7 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 import { PhoneIcon } from "./PhoneIcon";
 
 // Links absolutos (/#...) funcionam na home e nas páginas internas.
-const nav = [["Serviços", "/servicos"], ["Guincho", "/#guincho"], ["Peças", "/#pecas"], ["Contato", "/#local"]];
+const nav = [["Serviços", "/servicos"], ["Guincho", "/#pedido-guincho"], ["Agendar", "/#pedido-agendar"], ["Peças", "/#pecas"], ["Contato", "/#local"]];
 
 export function Header() {
   return (

@@ -9,6 +9,7 @@
   --color-mute: #5d666d;
   --color-line: #d9d8d2;
   --color-wa: #15803d;
+  --color-alerta: #c81e1e;
   --font-sans: var(--font-body);
   --font-display: var(--font-cond);
 }

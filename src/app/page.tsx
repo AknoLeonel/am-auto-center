@@ -1,13 +1,15 @@
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { Shortcuts } from "@/components/Shortcuts";
-import { Towing } from "@/components/Towing";
+import { SecaoPedido } from "@/components/SecaoPedido";
+import { Guincho } from "@/components/Guincho";
+import { Galeria } from "@/components/Galeria";
 import { PartsCatalogLazy } from "@/components/PartsCatalogLazy";
 import { PecasResumo } from "@/components/PecasResumo";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { Services, Steps, Trust, Location, FinalCta, Footer } from "@/components/Sections";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { BarraAcoes } from "@/components/BarraAcoes";
 import { faqHome } from "@/lib/faq-home";
 import { faqSchema } from "@/lib/schema";
 
@@ -18,9 +20,10 @@ export default function Home() {
       <main id="conteudo">
         <JsonLd data={faqSchema(faqHome)} />
         <Hero />
-        <Shortcuts />
+        <SecaoPedido />
         <Services />
-        <Towing />
+        <Guincho />
+        <Galeria />
         <PartsCatalogLazy resumo={<PecasResumo />} />
         <Steps />
         <Trust />
@@ -30,6 +33,7 @@ export default function Home() {
       </main>
       <Footer />
       <WhatsAppFloat />
+      <BarraAcoes guincho="#pedido-guincho" />
     </>
   );
 }
