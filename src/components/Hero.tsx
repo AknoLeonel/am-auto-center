@@ -4,9 +4,10 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 import { PhoneIcon } from "./PhoneIcon";
 
 const acoes = [
-  { href: "#pedido-guincho", titulo: "Preciso de guincho", sub: "Mande sua localização", cls: "bg-alerta text-white hover:brightness-110" },
-  { href: "#pedido-orcamento", titulo: "Pedir orçamento", sub: "Sem compromisso", cls: "bg-white text-ink hover:bg-paper" },
-  { href: "#pedido-agendar", titulo: "Agendar serviço", sub: "Escolha o dia", cls: "border-2 border-white/70 text-white hover:bg-white/10" },
+  // subtítulo com cor sólida: opacidade sobre o vermelho deixa o contraste abaixo de 4,5:1
+  { href: "#pedido-guincho", titulo: "Preciso de guincho", sub: "Mande sua localização", cls: "bg-alerta text-white hover:brightness-110", subCls: "text-white" },
+  { href: "#pedido-orcamento", titulo: "Pedir orçamento", sub: "Sem compromisso", cls: "bg-white text-ink hover:bg-paper", subCls: "text-mute" },
+  { href: "#pedido-agendar", titulo: "Agendar serviço", sub: "Escolha o dia", cls: "border-2 border-white/70 text-white hover:bg-white/10", subCls: "text-white/80" },
 ];
 
 export function Hero() {
@@ -32,7 +33,7 @@ export function Hero() {
             {acoes.map((a) => (
               <a key={a.href} href={a.href} className={`flex min-h-16 flex-col justify-center rounded-lg px-4 py-3 ${a.cls}`}>
                 <span className="font-display text-2xl font-bold leading-none">{a.titulo}</span>
-                <span className="mt-1 text-sm opacity-80">{a.sub}</span>
+                <span className={`mt-1 text-sm ${a.subCls}`}>{a.sub}</span>
               </a>
             ))}
           </nav>
