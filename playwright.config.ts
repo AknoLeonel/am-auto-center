@@ -15,7 +15,8 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:3100",
     viewport: { width: 390, height: 844 },
-    launchOptions: { args: ["--no-sandbox"] },
+    // PLAYWRIGHT_CHROMIUM: caminho de um Chromium já instalado (quando não dá para rodar "npx playwright install").
+    launchOptions: { args: ["--no-sandbox"], executablePath: process.env.PLAYWRIGHT_CHROMIUM || undefined },
     trace: "retain-on-failure",
   },
   webServer: {

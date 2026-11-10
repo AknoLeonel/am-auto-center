@@ -9,9 +9,9 @@ import "./globals.css";
 const body = Barlow({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-body", display: "swap" });
 const cond = Barlow_Condensed({ subsets: ["latin"], weight: ["700", "800"], variable: "--font-cond", display: "swap" });
  
-const title = "AM Auto Center | Mecânica em Formosa do Rio Preto - BA";
+const title = "AM Auto Center | Oficina e guincho em Formosa do Rio Preto - BA";
 const description =
-  "Mecânica, guincho e peças automotivas na BR-135, em Formosa do Rio Preto. Freios, suspensão, óleo, bateria e pneus. Peça seu orçamento pelo WhatsApp.";
+  "Oficina, guincho e peças na BR-135, em Formosa do Rio Preto (BA). Alinhamento, elétrica, freios e pneus. Peça guincho, orçamento ou agende pelo WhatsApp.";
  
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

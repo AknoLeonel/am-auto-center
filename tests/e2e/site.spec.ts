@@ -36,10 +36,10 @@ test.describe("conversões sem cookies", () => {
     await page.locator("a[href*='maps.google']").last().click();
     await page.evaluate(() => window.scrollTo(0, 1200)); await esperar(400);
     await semNavegar(page);
-    await page.locator("a[data-origem='flutuante']").click();
+    await page.locator("a[data-origem='barra'][href*='whatsapp']").click();
     await esperar(400);
     const pares = ev.filter((e) => e.evento !== "visita").map((e) => `${e.evento}:${e.origem}`);
-    expect(pares).toEqual(expect.arrayContaining(["whatsapp:hero", "whatsapp:cabecalho", "ligacao:cabecalho", "ligacao:hero", "mapa:avaliacoes", "whatsapp:guincho", "whatsapp:flutuante"]));
+    expect(pares).toEqual(expect.arrayContaining(["whatsapp:hero", "whatsapp:cabecalho", "ligacao:cabecalho", "ligacao:hero", "mapa:avaliacoes", "whatsapp:guincho", "whatsapp:barra"]));
     expect(pares.some((p) => p.startsWith("mapa:") && p !== "mapa:avaliacoes")).toBe(true);
     expect(ev.filter((e) => e.evento !== "visita").every((e) => e.fonte === "google")).toBe(true); // a origem acompanha a sessão
   });
@@ -129,7 +129,7 @@ for (const [nome, vp] of [["celular 390", { width: 390, height: 844 }], ["celula
     test("links dos cartões de serviço: 44 px e sem sobreposição", async ({ page }) => {
       await page.goto("/", { waitUntil: "networkidle" });
       const links = await page.$$eval("#servicos article a", (as) => as.map((a) => { const r = a.getBoundingClientRect(); return [r.width, r.height]; }));
-      expect(links).toHaveLength(12);
+      expect(links).toHaveLength(16);
       for (const [w, h] of links) { expect(w).toBeGreaterThanOrEqual(44); expect(h).toBeGreaterThanOrEqual(44); }
       const sobre = await page.$$eval("#servicos article", (arts) => arts.some((art) => {
         const [a, b] = [...art.querySelectorAll("a")].map((x) => x.getBoundingClientRect());
@@ -139,6 +139,61 @@ for (const [nome, vp] of [["celular 390", { width: 390, height: 844 }], ["celula
     });
   });
 }
+
+test.describe("pedido rápido (guincho, orçamento, agendar)", () => {
+  test.use({ geolocation: { latitude: -11.0478, longitude: -45.1932 }, permissions: ["geolocation"] });
+  const href = (page: Page) => page.locator("#pedido a[data-origem^='pedido:']").getAttribute("href").then((h) => decodeURIComponent(h!.split("text=")[1]));
+
+  test("botão do topo abre a aba de guincho e a mensagem leva veículo, problema e localização", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /Preciso de guincho/ }).click();
+    await expect(page.locator("#pedido button[aria-pressed='true']").first()).toHaveText("Guincho");
+    await page.locator("#pedido").getByRole("button", { name: "Moto" }).click();
+    await page.locator("#pedido").getByRole("button", { name: "Não liga" }).click();
+    await page.getByRole("button", { name: "Usar minha localização" }).click();
+    await expect(page.getByRole("button", { name: /Localização incluída/ })).toBeVisible();
+    const msg = await href(page);
+    expect(msg).toContain("PEDIDO DE GUINCHO");
+    expect(msg).toContain("Veículo: Moto");
+    expect(msg).toContain("Problema: Não liga");
+    expect(msg).toContain("https://maps.google.com/?q=-11.047800,-45.193200");
+  });
+
+  test("link /#pedido-agendar abre a aba de agenda; a mensagem leva serviço, dia e período", async ({ page }) => {
+    await page.goto("/#pedido-agendar");
+    await expect(page.getByRole("heading", { name: "Agendar serviço" })).toBeVisible();
+    await page.locator("#p-serv").selectOption("Troca de óleo");
+    await page.locator("#p-dia").fill("2031-03-14");
+    await page.locator("#pedido").getByRole("button", { name: "Tarde" }).click();
+    const msg = await href(page);
+    expect(msg).toContain("Serviço: Troca de óleo");
+    expect(msg).toMatch(/Dia: sexta-feira, 14\/03, de tarde/);
+  });
+
+  test("página de serviço já vem com o orçamento daquele serviço marcado", async ({ page }) => {
+    await page.goto("/servicos/freios");
+    await expect(page.locator("#pedido").getByRole("button", { name: "Freios", pressed: true })).toBeVisible();
+    expect(await href(page)).toContain("Serviço: Freios");
+  });
+
+  test("o pedido é registrado para o painel ao enviar", async ({ page }) => {
+    await page.goto("/#pedido-orcamento");
+    await semNavegar(page);
+    const enviado = page.waitForRequest((r) => r.method() === "POST" && (r.headers()["next-action"] ?? "") !== "");
+    await page.locator("#pedido a[data-origem='pedido:orcamento']").click();
+    expect((await enviado).postData()).toContain("orcamento");
+  });
+});
+
+test("barra de ações no celular aparece ao rolar e leva ao guincho", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("navigation", { name: "Ações rápidas" })).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, 1500));
+  const barra = page.getByRole("navigation", { name: "Ações rápidas" });
+  await expect(barra).toBeVisible();
+  await barra.getByRole("link", { name: "Guincho" }).click();
+  await expect(page.getByRole("heading", { name: "Pedir guincho agora" })).toBeVisible();
+});
 
 test("navegação por teclado e FAQ", async ({ page }) => {
   await page.goto("/servicos/pneus");

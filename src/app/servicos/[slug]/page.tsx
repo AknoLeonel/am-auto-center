@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer, FinalCta } from "@/components/Sections";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
+import { BarraAcoes } from "@/components/BarraAcoes";
+import { SecaoPedido } from "@/components/SecaoPedido";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
-import { site, wa } from "@/lib/site";
+import { fotos, services, site, wa } from "@/lib/site";
 import { servicosDetalhe, servicoPorSlug, CIDADE } from "@/lib/servicos";
 import { breadcrumb, faqSchema, servicoSchema } from "@/lib/schema";
 
@@ -30,6 +33,8 @@ export default async function ServicoPagina({ params }: { params: Promise<{ slug
   const s = servicoPorSlug((await params).slug);
   if (!s) notFound();
   const relacionados = s.relacionados.map((r) => servicoPorSlug(r)).filter((x) => !!x);
+  const foto = s.foto ? fotos[s.foto] : null;
+  const ehGuincho = s.slug === "guincho";
 
   return (
     <>
@@ -40,23 +45,35 @@ export default async function ServicoPagina({ params }: { params: Promise<{ slug
         <JsonLd data={breadcrumb([{ nome: "Início", caminho: "/" }, { nome: "Serviços", caminho: "/servicos" }, { nome: s.nome, caminho: `/servicos/${s.slug}` }])} />
 
         <section className="border-b-[10px] border-signal bg-asphalt text-white">
-          <div className="mx-auto max-w-6xl px-4 py-10 lg:py-14">
-            <nav aria-label="Você está em" className="text-sm text-white/70">
-              <ol className="flex flex-wrap items-center gap-x-2">
-                <li><Link href="/" className="underline">Início</Link></li>
-                <li aria-hidden>/</li>
-                <li><Link href="/servicos" className="underline">Serviços</Link></li>
-                <li aria-hidden>/</li>
-                <li aria-current="page" className="text-white">{s.nome}</li>
-              </ol>
-            </nav>
-            <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.5rem,8vw,4.5rem)] font-extrabold leading-[1]">{s.h1}</h1>
-            <p className="mt-4 max-w-2xl text-lg text-white/85">{s.intro}</p>
-            <a href={wa(s.msg)} target="_blank" rel="noopener" data-origem={`servico:${s.slug}`}
-              className="mt-6 inline-flex min-h-13 items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 text-lg font-bold text-white hover:brightness-110">
-              <WhatsAppIcon /> Pedir orçamento no WhatsApp
-            </a>
-            <p className="mt-3 text-sm text-white/70">{site.street} · {CIDADE}/{site.state}</p>
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 lg:grid-cols-[1.4fr_1fr] lg:items-center lg:py-14">
+            <div>
+              <nav aria-label="Você está em" className="text-sm text-white/70">
+                <ol className="flex flex-wrap items-center gap-x-2">
+                  <li><Link href="/" className="underline">Início</Link></li>
+                  <li aria-hidden>/</li>
+                  <li><Link href="/servicos" className="underline">Serviços</Link></li>
+                  <li aria-hidden>/</li>
+                  <li aria-current="page" className="text-white">{s.nome}</li>
+                </ol>
+              </nav>
+              <h1 className="mt-4 max-w-3xl font-display text-[clamp(2.5rem,8vw,4.5rem)] font-extrabold leading-[1]">{s.h1}</h1>
+              <p className="mt-4 max-w-2xl text-lg text-white/85">{s.intro}</p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <a href={ehGuincho ? "#pedido-guincho" : "#pedido-orcamento"}
+                  className={`inline-flex min-h-13 items-center justify-center rounded-lg px-6 py-3.5 text-lg font-bold text-white hover:brightness-110 ${ehGuincho ? "bg-alerta" : "bg-brand"}`}>
+                  {ehGuincho ? "Pedir guincho agora" : "Pedir orçamento rápido"}
+                </a>
+                <a href={wa(s.msg)} target="_blank" rel="noopener" data-origem={`servico:${s.slug}`}
+                  className="inline-flex min-h-13 items-center justify-center gap-2 rounded-lg bg-wa px-6 py-3.5 text-lg font-bold text-white hover:brightness-110">
+                  <WhatsAppIcon /> Direto no WhatsApp
+                </a>
+              </div>
+              <p className="mt-3 text-sm text-white/70">{site.street} · {CIDADE}/{site.state}</p>
+            </div>
+            {foto && (
+              <Image src={foto.src} alt={foto.alt} width={foto.w} height={foto.h} priority
+                sizes="(min-width: 1024px) 440px, 100vw" className="h-auto w-full rounded-lg object-cover shadow-xl" />
+            )}
           </div>
         </section>
 
@@ -89,6 +106,9 @@ export default async function ServicoPagina({ params }: { params: Promise<{ slug
           </div>
         </section>
 
+        <SecaoPedido inicial={ehGuincho ? "guincho" : "orcamento"} servico={services.find((x) => x.id === s.id)?.title}
+          titulo={ehGuincho ? "Peça o guincho em poucos toques" : `Orçamento de ${s.nome.toLowerCase()}`} />
+
         <Faq itens={s.faq} />
 
         <section className="px-4 pb-14 lg:pb-20">
@@ -111,6 +131,7 @@ export default async function ServicoPagina({ params }: { params: Promise<{ slug
       </main>
       <Footer />
       <WhatsAppFloat />
+      <BarraAcoes guincho="#pedido-guincho" />
     </>
   );
 }

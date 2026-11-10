@@ -9,10 +9,11 @@ env:
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: chave-de-teste
   NEXT_PUBLIC_SITE_URL: https://amautocenter.example
 
+# ubuntu-24.04 fixo: no ubuntu-latest (26.04) o Playwright 1.56 não consegue instalar o Chromium.
 jobs:
   qualidade:
     name: Lint, tipos, testes unitários e build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,7 +28,7 @@ jobs:
 
   banco:
     name: Banco de dados (Postgres 16)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
@@ -46,7 +47,7 @@ jobs:
 
   e2e:
     name: Navegador (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -60,7 +61,7 @@ jobs:
 
   lighthouse:
     name: Lighthouse (desempenho, acessibilidade e SEO)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

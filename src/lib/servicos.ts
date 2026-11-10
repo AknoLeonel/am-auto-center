@@ -1,5 +1,7 @@
 // Conteúdo das páginas de serviço (SEO local). Texto informativo e genérico de propósito:
 // não promete preço, prazo, marca nem garantia. REVISE com a oficina antes de publicar e ajuste ao que ela realmente faz.
+import type { fotos } from "./site";
+
 export type Servico = {
   slug: string;
   /** id do serviço em `services` (site.ts) usado nos cartões da home; guincho não tem */
@@ -16,6 +18,8 @@ export type Servico = {
   faq: { p: string; r: string }[];
   msg: string;
   relacionados: string[];
+  /** foto real da oficina mostrada na página (chave de `fotos` em site.ts) */
+  foto?: keyof typeof fotos;
 };
 
 export const CIDADE = "Formosa do Rio Preto";
@@ -235,6 +239,74 @@ export const servicosDetalhe: Servico[] = [
     relacionados: ["troca-de-oleo", "bateria", "freios"],
   },
   {
+    slug: "alinhamento-e-balanceamento",
+    id: "alinh",
+    nome: "Alinhamento e balanceamento",
+    h1: "Alinhamento e balanceamento em Formosa do Rio Preto",
+    metaTitle: "Alinhamento e balanceamento em Formosa do Rio Preto - BA",
+    metaDesc: "Volante torto, carro puxando ou vibração na estrada? Alinhamento e balanceamento para carro, caminhonete e UTV na BR-135, em Formosa do Rio Preto (BA).",
+    intro:
+      "Buraco, estrada de chão e meio-fio tiram o carro do lugar. Na AM Auto Center, na BR-135, temos rampa e elevador para alinhar carro, caminhonete e até UTV, e balanceamos as rodas para acabar com a vibração.",
+    sinaisTitulo: "Sinais de que está na hora",
+    sinais: [
+      "Volante torto com o carro andando em linha reta.",
+      "Carro puxando para um lado sem você virar o volante.",
+      "Vibração no volante ou no banco em velocidade de estrada.",
+      "Pneus gastando mais de um lado do que do outro.",
+      "Depois de trocar pneus, suspensão ou de bater a roda num buraco.",
+    ],
+    fazemos: [
+      "Avaliação dos pneus e da suspensão antes de alinhar.",
+      "Alinhamento na rampa, com o veículo no elevador.",
+      "Balanceamento das rodas.",
+      "Teste de rodagem para conferir se o volante ficou reto e sem vibração.",
+    ],
+    dica: {
+      titulo: "Alinhamento economiza pneu",
+      texto: "Rodar desalinhado gasta o pneu de forma irregular e aumenta o consumo. Alinhar quando aparecem os sinais costuma sair mais barato do que trocar o pneu antes da hora.",
+    },
+    faq: [
+      { p: "Qual a diferença entre alinhamento e balanceamento?", r: "O alinhamento corrige o ângulo das rodas, o que evita que o carro puxe e que o pneu gaste torto. O balanceamento corrige o peso da roda, o que elimina a vibração. Muitas vezes os dois são feitos juntos." },
+      { p: "Vocês alinham caminhonete e UTV?", r: "Sim. Além de carros, alinhamos caminhonetes e UTVs. Informe o modelo pelo WhatsApp para confirmarmos." },
+      { p: "De quanto em quanto tempo devo alinhar?", r: "O manual do veículo traz o intervalo. Fora isso, vale alinhar sempre que trocar pneus ou peças da suspensão e quando aparecer algum dos sinais acima." },
+      { p: "Quanto custa?", r: "Depende do veículo. Mande o modelo e o ano pelo WhatsApp e passamos o valor." },
+    ],
+    msg: "Olá! Quero fazer alinhamento e balanceamento.",
+    relacionados: ["pneus", "suspensao-e-direcao", "freios"],
+    foto: "alinhamento",
+  },
+  {
+    slug: "eletrica-e-injecao-eletronica",
+    id: "eletrica",
+    nome: "Elétrica e injeção eletrônica",
+    h1: "Elétrica e injeção eletrônica em Formosa do Rio Preto",
+    metaTitle: "Elétrica e injeção eletrônica em Formosa do Rio Preto - BA",
+    metaDesc: "Luz de injeção acesa, falha na partida ou pane elétrica? Serviço de elétrica e injeção eletrônica na BR-135, em Formosa do Rio Preto (BA).",
+    intro:
+      "Hoje quase tudo no carro depende da parte elétrica: partida, injeção, luzes e sensores. Quando algo falha, testamos o sistema com equipamento para encontrar a causa, sem trocar peça no chute.",
+    sinaisTitulo: "Quando procurar a oficina",
+    sinais: [
+      "Luz de injeção ou outra luz de alerta acesa no painel.",
+      "Carro demora para pegar ou não dá partida.",
+      "Motor falhando, engasgando ou com marcha lenta irregular.",
+      "Faróis fracos, lâmpadas queimando com frequência ou fusível que vive queimando.",
+      "Bateria que descarrega mesmo com o carro parado.",
+    ],
+    fazemos: [
+      "Leitura dos códigos de falha da injeção com scanner.",
+      "Teste de bateria, alternador e motor de partida.",
+      "Verificação de chicotes, conectores, fusíveis e relés.",
+      "Explicação do problema e orçamento antes de qualquer troca.",
+    ],
+    faq: [
+      { p: "A luz da injeção acendeu. Posso continuar rodando?", r: "Se a luz estiver piscando ou o motor falhando, evite rodar e peça ajuda. Se estiver acesa fixa e o carro parecer normal, traga para avaliação o quanto antes." },
+      { p: "Vocês fazem diagnóstico com scanner?", r: "Sim. A leitura dos códigos ajuda a achar o defeito mais rápido e evita a troca de peças sem necessidade." },
+      { p: "Quanto custa?", r: "Depende do defeito. Descreva o problema pelo WhatsApp e, se puder, mande foto do painel; respondemos com os próximos passos." },
+    ],
+    msg: "Olá! Preciso de serviço de elétrica ou injeção eletrônica.",
+    relacionados: ["diagnostico-de-motor", "bateria", "troca-de-oleo"],
+  },
+  {
     slug: "guincho",
     nome: "Guincho",
     h1: "Guincho na BR-135 e em Formosa do Rio Preto",
@@ -268,6 +340,7 @@ export const servicosDetalhe: Servico[] = [
     ],
     msg: "Olá! Preciso de guincho.",
     relacionados: ["diagnostico-de-motor", "bateria", "pneus"],
+    foto: "guincho",
   },
 ];
 

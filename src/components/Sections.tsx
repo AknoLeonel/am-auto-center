@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { services, site, wa, defaultMsg } from "@/lib/site";
+import { services, site, wa, defaultMsg, telFixo } from "@/lib/site";
 import { servicoPorId, servicosDetalhe } from "@/lib/servicos";
 import { WhatsAppIcon } from "./WhatsAppIcon";
  
@@ -10,7 +10,7 @@ export function Services() {
       <div className="mx-auto max-w-6xl">
         <h2 className="font-display text-4xl font-bold sm:text-5xl">O que fazemos pelo seu carro</h2>
         <p className="mt-2 max-w-xl text-mute">
-          Seis serviços para manter você na estrada com segurança. <Link href="/servicos" className="font-semibold text-brand underline">Ver todos os serviços</Link>.
+          Mecânica, alinhamento, elétrica e pneus para manter você na estrada com segurança. <Link href="/servicos" className="font-semibold text-brand underline">Ver todos os serviços</Link>.
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
@@ -97,7 +97,8 @@ export function Location() {
           <dl className="mt-5 space-y-4">
             <div><dt className="font-bold">Endereço</dt><dd className="text-mute">{site.street}<br />{site.city} - {site.state}, {site.zip}</dd></div>
             <div><dt className="font-bold">Horário</dt><dd className="text-mute">{site.hours}</dd></div>
-            <div><dt className="font-bold">Telefone e WhatsApp</dt><dd className="text-mute">{site.phoneDisplay}</dd></div>
+            <div><dt className="font-bold">Celular e WhatsApp</dt><dd className="text-mute">{site.phoneDisplay}</dd></div>
+            <div><dt className="font-bold">Telefone fixo</dt><dd><a href={telFixo} data-origem="local" className="inline-flex min-h-11 items-center font-semibold text-brand underline">{site.fixoDisplay}</a></dd></div>
           </dl>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href={wa(defaultMsg)} target="_blank" rel="noopener" data-origem="local"
@@ -142,7 +143,7 @@ export function Footer() {
           <p className="font-display text-2xl font-extrabold text-white">AM <span className="text-signal">AUTO CENTER</span></p>
           <p className="mt-2">{site.street}<br />{site.city} - {site.state}, {site.zip}</p>
           <p className="mt-2">
-            WhatsApp {site.phoneDisplay} ·{" "}
+            WhatsApp {site.phoneDisplay} · Fixo {site.fixoDisplay} ·{" "}
             <a className="text-white underline" href={site.instagram} target="_blank" rel="noopener">Instagram</a>
           </p>
         </div>

@@ -1,4 +1,4 @@
-import { site } from "./site";
+import { fotos, site } from "./site";
 import { CIDADE, servicosDetalhe, type Servico } from "./servicos";
 
 export const negocioId = `${site.url}/#negocio`;
@@ -12,8 +12,12 @@ export function negocio() {
     "@id": negocioId,
     name: site.name,
     url: site.url,
-    image: `${site.url}/opengraph-image`,
+    image: [fotos.fachada, fotos.equipe, fotos.alinhamento, fotos.guincho].map((f) => `${site.url}${f.src}`),
     telephone: `+${site.phoneTel}`,
+    contactPoint: [
+      { "@type": "ContactPoint", telephone: `+${site.phoneTel}`, contactType: "customer service", availableLanguage: "pt-BR" },
+      { "@type": "ContactPoint", telephone: `+${site.fixo}`, contactType: "customer service", availableLanguage: "pt-BR" },
+    ],
     address: {
       "@type": "PostalAddress",
       streetAddress: site.street,
