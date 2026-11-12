@@ -3,6 +3,7 @@ import Link from "next/link";
 import { services, site, wa, defaultMsg, telFixo } from "@/lib/site";
 import { servicoPorId, servicosDetalhe } from "@/lib/servicos";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { MapaLocalizador } from "./MapaLocalizador";
  
 export function Services() {
   return (
@@ -112,6 +113,7 @@ export function Location() {
           </div>
         </div>
         <div className="space-y-4 md:pt-14">
+          <MapaLocalizador />
           <div className="rounded-md border border-line bg-white p-5">
             <h3 className="font-display text-2xl font-bold">Siga no Instagram</h3>
             <p className="mt-1 text-mute"><a className="font-semibold underline" href={site.instagram} target="_blank" rel="noopener">@centeramauto</a>: serviços feitos e novidades da oficina.</p>
